@@ -53,7 +53,7 @@ Why both `.claude/skills/` and `skills/`?
 - `.claude/skills/scientific-figure-making/` is the project-local Claude Code entrypoint. In Claude Code, invoke it as `/scientific-figure-making`.
 - `skills/scientific-figure-making/` is the portable skill package for other agents or for copying into another workspace.
 - `AGENTS.md` gives Codex-style and generic coding agents repository-level instructions.
-- `CLAUDE.md` imports `AGENTS.md` and points Claude Code to the project skill.
+- `CLAUDE.md` points Claude Code to `AGENTS.md` and the project-local skill path.
 
 ## Minimal Python usage
 
