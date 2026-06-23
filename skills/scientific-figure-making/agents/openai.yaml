@@ -7,6 +7,11 @@ interface:
 policy:
   allow_implicit_invocation: true
 
+metadata:
+  version: "0.4.0"
+  install_scope: "repo,user,admin"
+  standalone: true
+
 dependencies:
   python: ">=3.9"
   packages:
