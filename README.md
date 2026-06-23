@@ -1,54 +1,64 @@
 # Illustrator4Resarch
 
-Codex-first Agent Skill for generating publication-ready scientific figures with automatic palette selection.
+Agent Skill for generating publication-ready scientific figures with automatic palette selection. The repository supports both Codex and Claude Code, while keeping the Python plotting implementation reusable outside any specific agent.
 
 ## What this repository is
 
-`Illustrator4Resarch` lets Codex-style coding agents generate Python/Matplotlib scientific figures from natural-language figure requirements. The repository keeps the implementation offline and deterministic: palette candidates are retrieved from a curated local registry, then either selected by the coding agent/LLM or by the built-in `auto_palette(...)` fallback.
+`Illustrator4Resarch` lets coding agents generate Python/Matplotlib scientific figures from natural-language figure requirements. Palette selection is offline and deterministic by default: candidate palettes are retrieved from a curated local registry, then either selected by the agent/LLM or by the built-in `auto_palette(...)` fallback.
 
 The intended workflow is:
 
 1. The user describes a rough visual style, such as `简洁大气`, `Nature 科研风格`, `IEEE 风格`, `色盲安全`, or `黑白打印`.
 2. The toolkit retrieves candidate palettes from the local registry.
-3. Codex chooses the final palette and semantic role mapping, or calls `auto_palette(...)` to make a deterministic choice.
+3. The agent chooses the final palette and semantic role mapping, or calls `auto_palette(...)` to make a deterministic choice.
 4. Matplotlib helpers render the final experimental figure.
 5. The generated script exports at least PNG and PDF.
 
-## Canonical repository structure
+## Repository structure
 
 ```text
 Illustrator4Resarch/
-├── AGENTS.md
-├── README.md
+├── AGENTS.md                              # Codex/general coding-agent instructions
+├── CLAUDE.md                              # Claude Code project memory and usage notes
+├── .agents/
+│   └── skills/
+│       └── scientific-figure-making/       # Codex repo-scoped discovery path
+│           ├── SKILL.md
+│           ├── agents/openai.yaml
+│           ├── references/
+│           └── scripts/
+├── .claude/
+│   └── skills/
+│       └── scientific-figure-making/       # Claude Code project-scoped discovery path
+│           ├── SKILL.md
+│           ├── references/
+│           └── scripts/
 ├── skills/
-│   └── scientific-figure-making/
+│   └── scientific-figure-making/           # Portable source copy of the skill
 │       ├── SKILL.md
+│       ├── agents/openai.yaml
 │       ├── references/
-│       │   ├── api-usage.md
-│       │   └── palette-workflow.md
 │       ├── scripts/
-│       │   └── preview_palette.py
 │       └── examples/
-│           ├── minimal_request.md
-│           └── codex_prompts.md
-├── scientific_figure_skill/
-│   ├── __init__.py
-│   └── core.py
+├── scientific_figure_skill/                # Importable Python implementation
 ├── prompt/
-│   └── scientific_figure_prompt.md
 ├── examples/
-│   └── auto_palette_demo.py
+├── scripts/
+│   └── sync_skill_paths.py
 └── tests/
-    └── test_palette_selector.py
 ```
 
-The canonical skill entrypoint is:
+The three skill copies have different purposes:
 
-```text
-skills/scientific-figure-making/SKILL.md
+- `.agents/skills/scientific-figure-making/` is the Codex auto-discovery copy.
+- `.claude/skills/scientific-figure-making/` is the Claude Code project skill copy.
+- `skills/scientific-figure-making/` is the portable source copy for manual installation, sharing, and synchronization.
+
+When editing the skill, modify `skills/scientific-figure-making/` first, then run:
+
+```bash
+python scripts/sync_skill_paths.py
 ```
-
-The Claude-specific `.claude/` duplicate and the old single `skill/` duplicate have been removed. For Codex, `AGENTS.md` is the primary instruction file; `skills/scientific-figure-making/SKILL.md` is the reusable skill specification; `scientific_figure_skill/core.py` is the executable implementation.
 
 ## Quick start in Codex
 
@@ -62,17 +72,14 @@ cd Illustrator4Resarch
 Then give Codex this instruction:
 
 ```text
-Read AGENTS.md first. Use the skill at skills/scientific-figure-making/SKILL.md.
-I want to generate a publication-ready scientific figure. Follow the repository workflow, use auto_palette for automatic palette selection unless a better LLM palette decision is needed, write complete runnable Python code, export PNG and PDF, and run the validation commands.
+Read AGENTS.md. Use the repo-scoped skill at .agents/skills/scientific-figure-making/SKILL.md.
+Create a publication-ready scientific figure. Use auto_palette for automatic palette selection unless a better model-side palette decision is needed. Write complete runnable Python code, export PNG and PDF, and run the validation commands.
 ```
 
-## Direct Codex prompt: generate one figure
-
-Paste this into Codex and replace the data block:
+Codex can also be prompted directly with the skill name when available:
 
 ```text
-Read AGENTS.md and use skills/scientific-figure-making/SKILL.md.
-
+$scientific-figure-making
 Task: create a paper-ready grouped bar chart.
 Style: 简洁大气，Nature 科研风格，色盲安全。
 Semantic roles: Fed-SOLO is proposed; FedAvg-LoRA is baseline; Local LoRA is neutral.
@@ -88,28 +95,39 @@ Local LoRA: 63.0, 34.9, 61.3, 49.8
 FedReFT: 66.2, 37.1, 63.8, 52.5
 ```
 
-## Direct Codex prompt: preview palette only
+## Quick start in Claude Code
 
-```text
-Read AGENTS.md. Use the palette selector from scientific_figure_skill.
-For the request "简洁大气，Nature科研风格，适合多方法柱状图", preview the top candidate palettes, explain why the selected palette is suitable, and show the hex colors and semantic roles.
+Open the repository in Claude Code:
+
+```bash
+git clone https://github.com/SaraiNoQ/Illustrator4Resarch.git
+cd Illustrator4Resarch
+claude
 ```
 
-Equivalent command:
+Then invoke the project skill explicitly:
+
+```text
+/scientific-figure-making
+请根据下面的数据画一张论文主实验 grouped bar。
+风格：简洁大气，Nature科研风格，色盲安全。
+Fed-SOLO 是 proposed，FedAvg-LoRA 是 baseline。
+导出 figures/main_comparison.png 和 figures/main_comparison.pdf。
+```
+
+If Claude Code does not list the skill, restart the Claude Code session after cloning or after changing `.claude/skills/`.
+
+## Palette preview
 
 ```bash
 python skills/scientific-figure-making/scripts/preview_palette.py "简洁大气，Nature科研风格" --figure-type grouped_bar --n-colors 5
 ```
 
-## Direct Codex prompt: integrate into another project
+The same script also works from the Codex and Claude discovery copies:
 
-Use this when your target paper/project repository already exists:
-
-```text
-Use https://github.com/SaraiNoQ/Illustrator4Resarch as the reference skill repository.
-In the current project, add a reusable plotting script that follows Illustrator4Resarch's scientific-figure-making skill.
-Do not copy unnecessary folders. Import or vendor only the minimal helper code needed from scientific_figure_skill if the current project does not already depend on it.
-Generate the requested figure, save outputs under figures/, and report exact changed files and validation commands.
+```bash
+python .agents/skills/scientific-figure-making/scripts/preview_palette.py "Nature科研风格" --figure-type grouped_bar
+python .claude/skills/scientific-figure-making/scripts/preview_palette.py "Nature科研风格" --figure-type grouped_bar
 ```
 
 ## Minimal Python usage
@@ -131,11 +149,6 @@ apply_publication_style(style)
 
 ```bash
 python -m pytest -q
-```
-
-For a smoke test of figure generation:
-
-```bash
 python examples/auto_palette_demo.py
 ```
 
