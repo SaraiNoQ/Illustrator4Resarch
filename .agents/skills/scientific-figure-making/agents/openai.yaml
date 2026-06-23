@@ -1,0 +1,14 @@
+interface:
+  display_name: "Scientific Figure Making"
+  short_description: "Generate publication-ready Matplotlib scientific figures with automatic palette selection."
+  brand_color: "#0F4D92"
+  default_prompt: "Use this skill to create a paper-ready scientific figure. Provide figure type, data, target style, semantic roles, and output paths."
+
+policy:
+  allow_implicit_invocation: true
+
+dependencies:
+  python: ">=3.9"
+  packages:
+    - matplotlib
+    - numpy
