@@ -1,14 +1,16 @@
-# Codex Agent Instructions
+# Agent Instructions
 
-This repository is a Codex-first Agent Skill project for generating publication-ready scientific figures.
+This repository is an Agent Skills project for generating publication-ready scientific figures. It supports Codex through `.agents/skills/` and Claude Code through `.claude/skills/`.
 
 ## Primary objective
 
-Use this project when the user asks a coding agent to create, polish, or refactor Python/Matplotlib figures for papers, theses, reports, or research slides. The canonical skill is `scientific-figure-making`.
+Use this project when the user asks a coding agent to create, polish, or refactor Python/Matplotlib figures for papers, theses, reports, or research slides. The skill name is `scientific-figure-making`.
 
 ## Canonical files
 
-- `skills/scientific-figure-making/SKILL.md`: the skill entrypoint. Read this before generating a figure.
+- `.agents/skills/scientific-figure-making/SKILL.md`: Codex repo-scoped skill entrypoint.
+- `.claude/skills/scientific-figure-making/SKILL.md`: Claude Code project skill entrypoint.
+- `skills/scientific-figure-making/SKILL.md`: portable source copy. Edit this first when changing skill instructions.
 - `skills/scientific-figure-making/references/api-usage.md`: API examples for palette selection and rendering.
 - `skills/scientific-figure-making/references/palette-workflow.md`: palette retrieval and decision rules.
 - `skills/scientific-figure-making/examples/codex_prompts.md`: copyable Codex prompts.
@@ -16,14 +18,15 @@ Use this project when the user asks a coding agent to create, polish, or refacto
 - `prompt/scientific_figure_prompt.md`: reusable user-facing prompt template.
 - `examples/auto_palette_demo.py`: smoke-test script.
 - `tests/test_palette_selector.py`: regression tests.
+- `scripts/sync_skill_paths.py`: synchronizes `skills/` into `.agents/skills/` and `.claude/skills/`.
 
-Do not use `.claude/skills/` or `skill/`; those duplicate directories were intentionally removed. This repository now uses `skills/` as the only skill directory.
+Do not delete `.agents/skills/` or `.claude/skills/`. They are not accidental duplicates; they are the discovery paths for Codex and Claude Code respectively.
 
 ## How Codex should use this repository
 
 When a user asks for a scientific figure, perform this workflow:
 
-1. Read this file, then read `skills/scientific-figure-making/SKILL.md`.
+1. Read this file, then read `.agents/skills/scientific-figure-making/SKILL.md`.
 2. Extract the figure type, data shape, method names, metric names, target style, semantic roles, output filenames, and required formats.
 3. Use `scientific_figure_skill.auto_palette(...)` to convert the user's natural-language style request into a palette selection.
 4. If the prompt requires model-side palette judgment, call `suggest_palettes(...)`, construct the palette decision prompt with `build_llm_palette_selection_prompt(...)`, choose one candidate, then validate the decision with `apply_llm_palette_decision(...)`.
@@ -34,6 +37,16 @@ When a user asks for a scientific figure, perform this workflow:
 9. Run the generated plotting script.
 10. If library code or tests changed, run `python -m pytest -q`.
 11. Report the selected palette name, hex colors, semantic color-role mapping, output files, and validation commands.
+
+## How Claude Code should use this repository
+
+Claude Code should use the project skill at `.claude/skills/scientific-figure-making/SKILL.md`. When the user invokes `/scientific-figure-making` or asks naturally for a paper-ready scientific figure, follow the same workflow as above. If skill instructions are updated, run:
+
+```bash
+python scripts/sync_skill_paths.py
+```
+
+Then restart the Claude Code session if the project skill list does not refresh.
 
 ## Minimal code pattern
 
@@ -63,12 +76,10 @@ apply_publication_style(style)
 # finalize_figure(fig, "figures/main_comparison", formats=["png", "pdf"])
 ```
 
-## Prompt template for Codex users
-
-Users can paste this directly into Codex:
+## Prompt template for users
 
 ```text
-Read AGENTS.md and use skills/scientific-figure-making/SKILL.md.
+Use the scientific-figure-making skill.
 
 Task: generate a publication-ready scientific figure.
 Figure type: <grouped_bar | ablation_bar | line | heatmap | scatter | multi_panel>.
