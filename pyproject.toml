@@ -1,0 +1,9 @@
+[project]
+name = "illustrator4resarch"
+version = "0.1.0"
+requires-python = ">=3.9"
+dependencies = ["matplotlib>=3.7", "numpy>=1.23"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
