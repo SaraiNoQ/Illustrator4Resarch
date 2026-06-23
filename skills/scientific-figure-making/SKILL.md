@@ -1,38 +1,50 @@
 ---
 name: scientific-figure-making
-description: Generate publication-ready Python/Matplotlib scientific figures with automatic palette selection from natural-language style requests. Use for paper figures, experimental plots, Nature/IEEE-style charts, grouped bars, ablations, trend curves, heatmaps, scatter plots, or research-slide visualizations.
-compatibility: Works as an Agent Skills package for Codex and Claude Code. Requires Python 3, matplotlib, and numpy for executable plotting helpers.
+description: "Use this skill whenever the user wants to create, polish, or refactor publication-ready scientific figures in Python/Matplotlib. Triggers include: scientific figure, paper plot, Nature or IEEE style chart, grouped bar, ablation figure, trend curve, convergence plot, heatmap, scatter plot, color palette, colorblind-safe palette, black-and-white print figure, or research-slide visualization. Do not use for general decorative graphic design unrelated to research visualization."
+compatibility: "Agent Skills package for Codex, Claude Code, and compatible agents. Requires Python 3 with matplotlib and numpy for executable plotting helpers."
 metadata:
-  version: "0.3.0"
+  version: "0.4.0"
   source_repository: "SaraiNoQ/Illustrator4Resarch"
-argument-hint: "<figure request, data, style, palette preference>"
-allowed-tools:
-  - Read
-  - Grep
-  - Glob
-  - Bash(python *)
-  - Bash(python3 *)
+  package_type: "global-installable-agent-skill"
+  primary_language: "python"
+argument-hint: "<figure request, data, style, palette preference, output paths>"
+allowed-tools: "Read Grep Glob Bash(python *) Bash(python3 *)"
 ---
 
 # Scientific figure making
 
 Use this skill to create or refine publication-ready scientific figures. The objective is accurate, readable, reproducible research visualization, not decorative graphic design.
 
-## Skill package layout
+This skill is designed as a standalone Agent Skills package. It can live in a project repository, in the Codex user skill directory, or in the Claude Code personal skill directory.
 
-This repository exposes the same skill through three paths:
+## Package contents
 
-- `.agents/skills/scientific-figure-making/`: Codex repo-scoped discovery path.
-- `.claude/skills/scientific-figure-making/`: Claude Code project-scoped discovery path.
-- `skills/scientific-figure-making/`: portable source copy for manual installation, sharing, and synchronization.
+The skill root contains:
 
-The skill body should remain identical across these three locations. If you change one copy, run `python scripts/sync_skill_paths.py` from the repository root.
+```text
+scientific-figure-making/
+├── SKILL.md
+├── README.md
+├── agents/
+│   └── openai.yaml              # Optional Codex UI metadata
+├── references/
+│   ├── api-usage.md
+│   ├── global-installation.md
+│   └── palette-workflow.md
+├── scripts/
+│   ├── figure_toolkit.py        # Standalone helper implementation
+│   └── preview_palette.py       # Palette preview CLI
+└── examples/
+    └── codex_prompts.md
+```
+
+When this skill is installed globally outside the Illustrator4Resarch repository, prefer the standalone helper at `scripts/figure_toolkit.py`. When working inside the repository, the importable package `scientific_figure_skill` is also available.
 
 ## Inputs to extract
 
 From the user request, identify:
 
-1. Figure type: grouped bar, ablation bar, trend line, multi-panel comparison, heatmap, scatter, schematic, or other.
+1. Figure type: grouped bar, ablation bar, trend line, convergence plot, multi-panel comparison, heatmap, scatter plot, schematic, or other.
 2. Data structure: method × metric, method × dataset, round × score, matrix, embedding coordinates, or custom.
 3. Target style: examples include `简洁大气`, `Nature科研风格`, `IEEE风格`, `色盲安全`, `黑白打印`, `科技冷色`, `柔和高级`.
 4. Number of visually distinct colors needed.
@@ -41,10 +53,29 @@ From the user request, identify:
 
 ## Required workflow
 
-1. Convert the user's natural-language style request into palette candidates using the local implementation:
+1. Convert the user's natural-language style request into palette candidates. If inside this repository, use:
 
 ```python
 from scientific_figure_skill import auto_palette
+
+selection = auto_palette(
+    request="Nature科研风格，简洁大气，适合多方法柱状图",
+    figure_type="grouped_bar",
+    n_colors=5,
+)
+```
+
+If the skill is installed globally and the repository package is not available, use the standalone helper:
+
+```python
+import sys
+from pathlib import Path
+
+# Replace this with the actual skill scripts directory if writing a generated script outside the skill folder.
+sys.path.insert(0, str(Path("~/.claude/skills/scientific-figure-making/scripts").expanduser()))
+# For Codex global installs, use: ~/.agents/skills/scientific-figure-making/scripts
+
+from figure_toolkit import auto_palette
 
 selection = auto_palette(
     request="Nature科研风格，简洁大气，适合多方法柱状图",
@@ -60,13 +91,13 @@ selection = auto_palette(
 4. Build the figure with:
 
 ```python
-from scientific_figure_skill import FigureStyle, apply_publication_style
+from figure_toolkit import FigureStyle, apply_publication_style
 
 style = FigureStyle(palette=selection.colors, color_roles=selection.color_roles)
 apply_publication_style(style)
 ```
 
-5. Use Matplotlib helper functions from `scientific_figure_skill`, or write raw Matplotlib code that follows the same visual rules.
+5. Use helper functions such as `make_grouped_bar(...)`, `make_trend(...)`, and `make_heatmap(...)`, or write raw Matplotlib code following the same visual rules.
 
 6. Export PNG and PDF unless the user specifies otherwise.
 
@@ -97,10 +128,11 @@ apply_publication_style(style)
 
 Read these files when needed:
 
+- `references/global-installation.md`: installing this skill globally for Codex or Claude Code.
 - `references/palette-workflow.md`: palette retrieval and decision rules.
 - `references/api-usage.md`: Python API examples.
-- `scientific_figure_skill/core.py`: importable implementation at repository root.
-- `prompt/scientific_figure_prompt.md`: long-form user-facing prompt template at repository root.
+- `scripts/figure_toolkit.py`: standalone implementation bundled with this skill.
+- `scripts/preview_palette.py`: preview palette candidates from a natural-language style request.
 
 ## Expected output
 
@@ -112,4 +144,4 @@ For code-generation requests, return or create:
 4. Any assumptions about data shape.
 5. Suggested validation command.
 
-For repository-modification requests, edit the relevant files and run `python -m pytest -q`.
+For repository-modification requests, edit the relevant files and run `python -m pytest -q` if the Python package or tests are changed.
