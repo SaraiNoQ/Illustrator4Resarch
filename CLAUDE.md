@@ -1,14 +1,24 @@
 # Claude Code Instructions
 
-This repository provides a project skill for Claude Code:
+This repository provides a Claude Code-compatible skill named `scientific-figure-making`.
 
-```text
-.claude/skills/scientific-figure-making/SKILL.md
+## Personal/global install
+
+Install the skill so it is available in all Claude Code projects:
+
+```bash
+python scripts/install_global_skill.py --target claude
 ```
 
-Use `/scientific-figure-making` when the user asks to create, polish, or refactor publication-ready scientific figures.
+This writes:
 
-## How to call the skill in Claude Code
+```text
+~/.claude/skills/scientific-figure-making/SKILL.md
+```
+
+After a first-time install, restart Claude Code if the skill directory did not exist before the session started.
+
+Invoke globally:
 
 ```text
 /scientific-figure-making
@@ -17,29 +27,40 @@ Use `/scientific-figure-making` when the user asks to create, polish, or refacto
 要求：自动选择 palette，导出 PNG 和 PDF。
 ```
 
-Claude Code can also invoke the skill implicitly when the user asks for paper figures, experimental plots, Nature/IEEE-style charts, ablation figures, trend curves, heatmaps, or research-slide figures.
+## Project-scoped use
 
-## Required workflow
+Inside this repository, Claude Code can also discover the project wrapper:
 
-1. Read `.claude/skills/scientific-figure-making/SKILL.md`.
-2. Use `scientific_figure_skill.auto_palette(...)` unless the user explicitly provides colors.
-3. Generate complete runnable Python/Matplotlib code.
-4. Export at least PNG and PDF for paper figures.
-5. Run the generated script.
-6. If library code or tests changed, run `python -m pytest -q`.
+```text
+.claude/skills/scientific-figure-making/SKILL.md
+```
 
-## Synchronization rule
+That wrapper points to the complete standalone package:
 
-The portable source skill is:
+```text
+skills/scientific-figure-making/SKILL.md
+```
+
+## What Claude should do when the skill is used
+
+1. Parse the user's figure type, data shape, target style, semantic roles, and output paths.
+2. Use automatic palette selection from `scientific_figure_skill` when working inside this repository.
+3. If the skill is globally installed outside this repository, use `scripts/figure_toolkit.py` bundled inside the skill folder.
+4. Generate complete runnable Python/Matplotlib code.
+5. Export at least PNG and PDF.
+6. Run the plotting script and report exact output paths.
+
+## Maintenance
+
+When editing skill behavior, change the canonical package first:
 
 ```text
 skills/scientific-figure-making/
 ```
 
-After editing the portable skill, synchronize both Codex and Claude Code discovery paths:
+Then run:
 
 ```bash
 python scripts/sync_skill_paths.py
+python scripts/install_global_skill.py --target claude
 ```
-
-Do not delete `.agents/skills/` or `.claude/skills/`; they are required for Codex and Claude Code discovery respectively.
