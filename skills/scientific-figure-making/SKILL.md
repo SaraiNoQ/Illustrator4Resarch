@@ -1,6 +1,10 @@
 ---
 name: scientific-figure-making
-description: Generate publication-ready Python/Matplotlib scientific figures with automatic palette selection from natural-language style requests. Use when the user asks for paper figures, experimental plots, Nature/IEEE-style charts, grouped bars, ablations, trend curves, heatmaps, scatter plots, or research-slide visualizations.
+description: Generate publication-ready Python/Matplotlib scientific figures with automatic palette selection from natural-language style requests. Use for paper figures, experimental plots, Nature/IEEE-style charts, grouped bars, ablations, trend curves, heatmaps, scatter plots, or research-slide visualizations.
+compatibility: Works as an Agent Skills package for Codex and Claude Code. Requires Python 3, matplotlib, and numpy for executable plotting helpers.
+metadata:
+  version: "0.3.0"
+  source_repository: "SaraiNoQ/Illustrator4Resarch"
 argument-hint: "<figure request, data, style, palette preference>"
 allowed-tools:
   - Read
@@ -12,7 +16,17 @@ allowed-tools:
 
 # Scientific figure making
 
-Use this skill to create or refine publication-ready scientific figures. The goal is not decorative graphic design; the goal is accurate, readable, reproducible research visualization.
+Use this skill to create or refine publication-ready scientific figures. The objective is accurate, readable, reproducible research visualization, not decorative graphic design.
+
+## Skill package layout
+
+This repository exposes the same skill through three paths:
+
+- `.agents/skills/scientific-figure-making/`: Codex repo-scoped discovery path.
+- `.claude/skills/scientific-figure-making/`: Claude Code project-scoped discovery path.
+- `skills/scientific-figure-making/`: portable source copy for manual installation, sharing, and synchronization.
+
+The skill body should remain identical across these three locations. If you change one copy, run `python scripts/sync_skill_paths.py` from the repository root.
 
 ## Inputs to extract
 
@@ -39,9 +53,9 @@ selection = auto_palette(
 )
 ```
 
-2. If an LLM-based palette decision is available, call `build_llm_palette_selection_prompt(...)`, pass the candidate JSON to the model, then apply the returned JSON with `apply_llm_palette_decision(...)`.
+2. If model-side palette judgment is useful, call `build_llm_palette_selection_prompt(...)`, reason over the candidate JSON, choose one palette, then validate the returned JSON with `apply_llm_palette_decision(...)`.
 
-3. If no external palette decision is available, use the deterministic `auto_palette(...)` result.
+3. If no explicit model decision is needed, use the deterministic `auto_palette(...)` result.
 
 4. Build the figure with:
 
@@ -81,14 +95,16 @@ apply_publication_style(style)
 
 ## Supporting references
 
-- Palette workflow: `references/palette-workflow.md`
-- API usage: `references/api-usage.md`
-- Prompt template: `../../../prompt/scientific_figure_prompt.md`
-- Python implementation: `../../../scientific_figure_skill/core.py`
+Read these files when needed:
+
+- `references/palette-workflow.md`: palette retrieval and decision rules.
+- `references/api-usage.md`: Python API examples.
+- `scientific_figure_skill/core.py`: importable implementation at repository root.
+- `prompt/scientific_figure_prompt.md`: long-form user-facing prompt template at repository root.
 
 ## Expected output
 
-For code-generation requests, return:
+For code-generation requests, return or create:
 
 1. Brief design decision summary.
 2. Complete runnable Python script.
