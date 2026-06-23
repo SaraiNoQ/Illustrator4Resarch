@@ -6,8 +6,19 @@ import argparse
 from pathlib import Path
 import sys
 
-# Allow running this script from inside a copied skill directory.
-ROOT = Path(__file__).resolve().parents[3]
+
+def find_repo_root(start: Path) -> Path:
+    """Find the repository root from any copied skill discovery path."""
+    for path in [start, *start.parents]:
+        if (path / "scientific_figure_skill").is_dir():
+            return path
+    raise RuntimeError(
+        "Could not find repository root containing scientific_figure_skill/. "
+        "Run this script inside the Illustrator4Resarch repository."
+    )
+
+
+ROOT = find_repo_root(Path(__file__).resolve())
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
