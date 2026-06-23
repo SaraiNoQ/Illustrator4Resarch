@@ -1,6 +1,10 @@
 # Illustrator4Resarch
 
-Agent Skill for generating publication-ready scientific figures with automatic palette selection. The repository supports both Codex and Claude Code, while keeping the Python plotting implementation reusable outside any specific agent.
+Agent Skill for generating publication-ready scientific figures with automatic palette selection. The repository now supports three usage modes:
+
+1. **Global skill install** for Codex and Claude Code.
+2. **Repository-scoped discovery** through `.agents/skills/` and `.claude/skills/`.
+3. **Reusable Python package** through `scientific_figure_skill/`.
 
 ## What this repository is
 
@@ -18,65 +22,91 @@ The intended workflow is:
 
 ```text
 Illustrator4Resarch/
-├── AGENTS.md                              # Codex/general coding-agent instructions
-├── CLAUDE.md                              # Claude Code project memory and usage notes
-├── .agents/
-│   └── skills/
-│       └── scientific-figure-making/       # Codex repo-scoped discovery path
-│           ├── SKILL.md
-│           ├── agents/openai.yaml
-│           ├── references/
-│           └── scripts/
-├── .claude/
-│   └── skills/
-│       └── scientific-figure-making/       # Claude Code project-scoped discovery path
-│           ├── SKILL.md
-│           ├── references/
-│           └── scripts/
-├── skills/
-│   └── scientific-figure-making/           # Portable source copy of the skill
-│       ├── SKILL.md
-│       ├── agents/openai.yaml
-│       ├── references/
-│       ├── scripts/
-│       └── examples/
-├── scientific_figure_skill/                # Importable Python implementation
-├── prompt/
+├── AGENTS.md                              # General/Codex agent instructions
+├── CLAUDE.md                              # Claude Code project notes
+├── .agents/skills/scientific-figure-making/   # Codex repo-scoped discovery wrapper
+├── .claude/skills/scientific-figure-making/   # Claude Code project discovery wrapper
+├── skills/scientific-figure-making/           # Standalone global-installable skill package
+│   ├── SKILL.md
+│   ├── README.md
+│   ├── agents/openai.yaml
+│   ├── references/
+│   │   ├── api-usage.md
+│   │   ├── global-installation.md
+│   │   └── palette-workflow.md
+│   ├── scripts/
+│   │   ├── figure_toolkit.py
+│   │   └── preview_palette.py
+│   └── examples/
+├── scientific_figure_skill/                # Importable Python implementation for repository development
 ├── examples/
 ├── scripts/
+│   ├── install_global_skill.py
+│   ├── package_skill.py
 │   └── sync_skill_paths.py
 └── tests/
 ```
 
-The three skill copies have different purposes:
+The canonical standalone skill package is:
 
-- `.agents/skills/scientific-figure-making/` is the Codex auto-discovery copy.
-- `.claude/skills/scientific-figure-making/` is the Claude Code project skill copy.
-- `skills/scientific-figure-making/` is the portable source copy for manual installation, sharing, and synchronization.
-
-When editing the skill, modify `skills/scientific-figure-making/` first, then run:
-
-```bash
-python scripts/sync_skill_paths.py
+```text
+skills/scientific-figure-making/
 ```
 
-## Quick start in Codex
+This folder is designed to be copied directly to global agent skill directories.
 
-Clone the repository and open it in Codex:
+## Global install
+
+Install for both Codex and Claude Code:
 
 ```bash
 git clone https://github.com/SaraiNoQ/Illustrator4Resarch.git
 cd Illustrator4Resarch
+python scripts/install_global_skill.py --target both
 ```
 
-Then give Codex this instruction:
+Install only for Codex:
+
+```bash
+python scripts/install_global_skill.py --target codex
+```
+
+Install only for Claude Code:
+
+```bash
+python scripts/install_global_skill.py --target claude
+```
+
+Manual install paths:
+
+```bash
+# Codex user-level skill
+mkdir -p ~/.agents/skills
+cp -R skills/scientific-figure-making ~/.agents/skills/scientific-figure-making
+
+# Claude Code personal skill
+mkdir -p ~/.claude/skills
+cp -R skills/scientific-figure-making ~/.claude/skills/scientific-figure-making
+rm -rf ~/.claude/skills/scientific-figure-making/agents
+```
+
+After a new global install, restart Codex or Claude Code if the skill directory did not exist when the session started.
+
+## Package for sharing
+
+Create a zip archive similar to official skill packages:
+
+```bash
+python scripts/package_skill.py
+```
+
+Output:
 
 ```text
-Read AGENTS.md. Use the repo-scoped skill at .agents/skills/scientific-figure-making/SKILL.md.
-Create a publication-ready scientific figure. Use auto_palette for automatic palette selection unless a better model-side palette decision is needed. Write complete runnable Python code, export PNG and PDF, and run the validation commands.
+dist/scientific-figure-making.zip
 ```
 
-Codex can also be prompted directly with the skill name when available:
+## Use in Codex after global install
 
 ```text
 $scientific-figure-making
@@ -95,17 +125,7 @@ Local LoRA: 63.0, 34.9, 61.3, 49.8
 FedReFT: 66.2, 37.1, 63.8, 52.5
 ```
 
-## Quick start in Claude Code
-
-Open the repository in Claude Code:
-
-```bash
-git clone https://github.com/SaraiNoQ/Illustrator4Resarch.git
-cd Illustrator4Resarch
-claude
-```
-
-Then invoke the project skill explicitly:
+## Use in Claude Code after global install
 
 ```text
 /scientific-figure-making
@@ -115,7 +135,21 @@ Fed-SOLO 是 proposed，FedAvg-LoRA 是 baseline。
 导出 figures/main_comparison.png 和 figures/main_comparison.pdf。
 ```
 
-If Claude Code does not list the skill, restart the Claude Code session after cloning or after changing `.claude/skills/`.
+## Repository-scoped use
+
+When working inside this repository, Codex can discover:
+
+```text
+.agents/skills/scientific-figure-making/SKILL.md
+```
+
+Claude Code can discover:
+
+```text
+.claude/skills/scientific-figure-making/SKILL.md
+```
+
+Both discovery wrappers point back to the canonical package at `skills/scientific-figure-making/`.
 
 ## Palette preview
 
@@ -123,14 +157,14 @@ If Claude Code does not list the skill, restart the Claude Code session after cl
 python skills/scientific-figure-making/scripts/preview_palette.py "简洁大气，Nature科研风格" --figure-type grouped_bar --n-colors 5
 ```
 
-The same script also works from the Codex and Claude discovery copies:
+Global install examples:
 
 ```bash
-python .agents/skills/scientific-figure-making/scripts/preview_palette.py "Nature科研风格" --figure-type grouped_bar
-python .claude/skills/scientific-figure-making/scripts/preview_palette.py "Nature科研风格" --figure-type grouped_bar
+python ~/.agents/skills/scientific-figure-making/scripts/preview_palette.py "Nature科研风格" --figure-type grouped_bar
+python ~/.claude/skills/scientific-figure-making/scripts/preview_palette.py "Nature科研风格" --figure-type grouped_bar
 ```
 
-## Minimal Python usage
+## Minimal Python usage inside this repository
 
 ```python
 from scientific_figure_skill import auto_palette, FigureStyle, apply_publication_style
@@ -145,11 +179,24 @@ style = FigureStyle(palette=selection.colors, color_roles=selection.color_roles)
 apply_publication_style(style)
 ```
 
+## Minimal Python usage from a global skill install
+
+```python
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path("~/.agents/skills/scientific-figure-making/scripts").expanduser()))
+
+from figure_toolkit import auto_palette, FigureStyle, apply_publication_style
+```
+
+For Claude Code global installs, replace `~/.agents/skills` with `~/.claude/skills`.
+
 ## Tests
 
 ```bash
 python -m pytest -q
 python examples/auto_palette_demo.py
+python skills/scientific-figure-making/scripts/preview_palette.py "Nature科研风格" --figure-type grouped_bar
 ```
 
 ## Notes
