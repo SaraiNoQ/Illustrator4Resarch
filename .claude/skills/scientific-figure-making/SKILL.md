@@ -1,12 +1,12 @@
 ---
 name: scientific-figure-making
-description: "Use this skill whenever the user wants to create, polish, or refactor publication-ready scientific figures in Python/Matplotlib. Triggers include scientific figure, paper plot, Nature or IEEE style chart, grouped bar, ablation figure, trend curve, heatmap, scatter plot, color palette, colorblind-safe palette, black-and-white print figure, or research-slide visualization."
+description: "Use this skill whenever the user wants to create, polish, or refactor publication-ready scientific figures in Python/Matplotlib. Triggers include scientific figure, paper plot, Nature or IEEE style chart, grouped bar, ablation figure, trend curve, heatmap, scatter plot, color palette, chart style preset, seaborn-like chart, hand-drawn chart, colorblind-safe palette, or research-slide visualization."
 compatibility: "Claude Code project-scoped wrapper for the global-installable scientific-figure-making skill. Requires Python 3 with matplotlib and numpy for plotting helpers."
 metadata:
-  version: "0.4.0"
+  version: "0.5.0"
   source_repository: "SaraiNoQ/Illustrator4Resarch"
   source_skill_path: "skills/scientific-figure-making"
-argument-hint: "<figure request, data, style, palette preference, output paths>"
+argument-hint: "<figure request, data, venue/style, palette preference, chart style, output paths>"
 allowed-tools: "Read Grep Glob Bash(python *) Bash(python3 *)"
 ---
 
@@ -18,19 +18,4 @@ This is the Claude Code project discovery wrapper. For the complete standalone s
 skills/scientific-figure-making/SKILL.md
 ```
 
-Use the skill to create or refine publication-ready Python/Matplotlib scientific figures with automatic palette selection.
-
-## Workflow
-
-1. Read `skills/scientific-figure-making/SKILL.md` for the full instructions.
-2. Use `skills/scientific-figure-making/scripts/figure_toolkit.py` when a self-contained helper is needed.
-3. Use `scientific_figure_skill/` when working inside this repository and importing the maintained package is more convenient.
-4. Export at least PNG and PDF.
-5. If code in this repository changes, run `python -m pytest -q`.
-
-## Direct invocation
-
-```text
-/scientific-figure-making
-请根据实验数据生成论文级 Matplotlib 配图，自动选择科研配色，导出 PNG 和 PDF。
-```
+That canonical package contains the heuristic palette engine, chart-style preset engine, references, and standalone Python scripts.
