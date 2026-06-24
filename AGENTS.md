@@ -4,6 +4,7 @@ This repository is an Agent Skills project for generating publication-ready scie
 
 - Codex repo-scoped discovery through `.agents/skills/scientific-figure-making/`.
 - Claude Code project discovery through `.claude/skills/scientific-figure-making/`.
+- OpenCode repository-local use through this `AGENTS.md` file plus the canonical skill package.
 - Global install through the standalone package at `skills/scientific-figure-making/`.
 
 ## Primary objective
@@ -12,20 +13,23 @@ Use this project when the user asks a coding agent to create, polish, or refacto
 
 ## Design model
 
-The skill has two independent design layers:
+The skill has three independent design layers:
 
 1. **Palette engine**: color palette, generated palette variants, semantic color roles.
-2. **Chart-style engine**: venue/form preset, fonts, grid, spines, line widths, bar edges, markers, legend framing, hand-drawn/dark/presentation effects.
+2. **Chart-style engine**: venue/form preset, grid, spines, line widths, bar edges, markers, legend framing, hand-drawn/dark/presentation effects.
+3. **Font engine**: publication-safe font candidate registry, style-aware font scoring, and safe sans-serif correction for non-formal styles such as `cartoon_handdrawn`.
 
-Do not reduce chart design to color selection. `Nature科研风格`, `IEEE Transactions`, `seaborn whitegrid`, and `卡通手绘` imply different chart forms even if the palette is unchanged.
+Do not reduce chart design to color selection. `Nature科研风格`, `IEEE Transactions`, `seaborn whitegrid`, and `卡通手绘` imply different chart forms even if the palette is unchanged. Font choice is also separate: a cute hand-drawn chart should not silently inherit Times New Roman.
 
 ## Canonical files
 
 - `skills/scientific-figure-making/SKILL.md`: canonical standalone skill package. Edit this first.
 - `skills/scientific-figure-making/scripts/figure_design.py`: heuristic palette and chart-style engine.
+- `skills/scientific-figure-making/scripts/figure_fonts.py`: global-skill font selection helpers.
 - `skills/scientific-figure-making/scripts/figure_toolkit.py`: plotting helpers and legacy compatibility.
 - `skills/scientific-figure-making/scripts/preview_palette.py`: palette and style preview CLI.
 - `skills/scientific-figure-making/references/api-usage.md`: API examples.
+- `skills/scientific-figure-making/references/font-workflow.md`: publication-safe font registry and workflow.
 - `skills/scientific-figure-making/references/palette-workflow.md`: palette heuristics and generated variants.
 - `skills/scientific-figure-making/references/style-workflow.md`: chart-style presets and venue/form rules.
 - `.agents/skills/scientific-figure-making/SKILL.md`: Codex repo-scoped wrapper.
@@ -72,6 +76,20 @@ When working inside this repository, Codex can also read the repo wrapper at `.a
 
 When working inside this repository, Claude Code can also read the project wrapper at `.claude/skills/scientific-figure-making/SKILL.md`.
 
+## OpenCode usage
+
+Start OpenCode from the repository root and explicitly point it to the canonical skill package:
+
+```text
+Read AGENTS.md and use skills/scientific-figure-making/SKILL.md as the scientific figure skill.
+Generate a publication-ready grouped bar chart.
+Chart style: 二次元、可爱、手绘风格, but still suitable for an academic paper.
+Palette: 清新自然，色盲安全，主方法突出，baseline 有对比。
+Export PNG and PDF, then run the plotting script.
+```
+
+Use this repository-local workflow for OpenCode because different OpenCode setups may use different command/plugin conventions.
+
 ## Figure-generation workflow
 
 1. Parse figure type, data shape, venue/chart style, palette preference, semantic roles, and output paths.
@@ -90,6 +108,7 @@ When working inside this repository, Claude Code can also read the project wrapp
 - Do not confuse palette with chart style.
 - Do not use seaborn unless explicitly requested; use seaborn-like Matplotlib presets instead.
 - Prefer semantic color roles: proposed, baseline, secondary, ablation, neutral, highlight.
+- Use the publication-safe font registry; do not use Times New Roman for cute, anime, hand-drawn, or informal chart styles.
 - For heatmaps, choose sequential or diverging palettes according to the data semantics.
 - For black-and-white print, use grayscale plus hatching or marker styles.
 - Always provide exact output paths.
