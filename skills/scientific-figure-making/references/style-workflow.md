@@ -1,105 +1,77 @@
 # Chart style workflow
 
-Palette and chart style are separate design layers.
+Palette, chart style, table style, and font choice are separate design layers.
 
-- **Palette** controls colors and semantic color roles.
-- **Chart style** controls plotting form: fonts, grid, spines, line widths, bar edges, markers, legend framing, sketch effects, and dark/light background.
-
-This separation matters because different journals, conferences, and use cases prefer different chart grammars even when they use the same colors.
+- Palette controls color and semantic color roles.
+- Chart style controls plot grammar: grids, spines, line widths, markers, legend, background, and sketch effects.
+- Table style controls header emphasis, row rules, zebra rows, and cell density.
+- Font choice is handled by the font engine.
 
 ## Pipeline
 
-1. Parse the user's request for venue/style/use-case cues, such as `Nature`, `IEEE`, `NeurIPS`, `seaborn whitegrid`, `Matplotlib 默认`, `卡通手绘`, `答辩`, or `深色展示`.
-2. Call `resolve_chart_style(...)` to select a chart-style preset.
-3. Call `auto_palette(...)` or `auto_figure_design(...)` separately for color selection.
-4. Apply the chosen form with `apply_publication_style(FigureStyle(..., chart_style=...))`.
-5. Use the selected style only when it fits the figure purpose. For example, `cartoon_handdrawn` is appropriate for explanatory slides, not formal paper main results.
-6. When a non-white style is active, call `finalize_figure(...)` or `harmonize_figure_background(fig)` rather than saving manually with `facecolor="white"`.
+1. Parse the request for venue, ecosystem, output medium, and figure type cues.
+2. Call `resolve_chart_style(...)` for chart grammar.
+3. Call `auto_palette(...)` or `auto_figure_design(...)` separately for colors.
+4. For tables, call `resolve_table_style(...)` or use `design.table_style`.
+5. Apply chart form with `apply_publication_style(...)`.
+6. Apply table form with `apply_table_style(...)` when using Matplotlib tables.
 
-## One-call design
+## Chart-style families
 
-```python
-from scientific_figure_skill import auto_figure_design, FigureStyle, apply_publication_style
+### Paper and venue styles
 
-design = auto_figure_design(
-    request="IEEE Transactions 风格，色盲安全，多方法柱状图",
-    figure_type="grouped_bar",
-    n_colors=5,
-)
+- `publication_minimal`: safe general academic default.
+- `nature_journal`: compact high-impact journal panel.
+- `science_compact`: very compact Science/Cell-like panel.
+- `ieee_transactions`: engineering-paper style with restrained y-grid.
+- `acm_conference`: compact CS conference figure.
+- `neurips_ml`: modern ML conference style.
 
-style = FigureStyle(
-    palette=design.palette.colors,
-    color_roles=design.palette.color_roles,
-    chart_style=design.chart_style,
-)
-apply_publication_style(style)
-```
+### Seaborn-like styles
 
-## Built-in chart-style presets
+- `seaborn_whitegrid`: white background with light grid.
+- `seaborn_darkgrid`: pale panel with white grid.
+- `seaborn_ticks`: tick-focused style with little grid emphasis.
 
-### `publication_minimal`
+### ggplot2-like styles
 
-General academic Matplotlib style. Open axes, no decorative grid, high readability. Good default when user gives vague requirements.
+- `ggplot_gray`: gray panel with white grid.
+- `ggplot_bw`: boxed black-and-white panel.
+- `ggplot_minimal`: minimal non-data ink with light grid.
+- `ggplot_classic`: axis-line-only statistical figure.
 
-### `nature_journal`
+### Web, editorial, and dashboard styles
 
-Compact high-impact journal style. Restrained axes, small but clean typography, minimal grid. Good for Nature/Science/Cell-like paper panels.
+- `datawrapper_clean`: newsroom/editorial chart grammar.
+- `observable_modern`: D3/Observable-like web chart grammar.
+- `tableau_dashboard`: screen-readable dashboard grammar.
+- `economist_magazine`: magazine-like editorial chart.
+- `financial_times_report`: warm editorial report style.
 
-### `ieee_transactions`
+### Presentation and explanatory styles
 
-Engineering-paper style. Compact fonts, conservative line widths, y-grid, print-safe look. Good for IEEE Transactions figures.
+- `thesis_clean`: larger report/thesis figure.
+- `presentation_large`: talk and defense figure.
+- `poster_infographic`: poster-scale figure.
+- `annotation_focus`: explanatory chart with annotation-friendly spacing.
 
-### `acm_conference`
+### Specialized styles
 
-Compact CS conference style. Designed for one-column or two-column conference layouts.
-
-### `neurips_ml`
-
-Modern ML conference style. Clean white background, light y-grid, thicker method curves. Good for NeurIPS/ICML/ICLR-style empirical plots.
-
-### `seaborn_whitegrid`
-
-Seaborn-like whitegrid grammar implemented with Matplotlib rcParams only. Good for statistical exploration or clean report figures. Do not import seaborn unless explicitly requested.
-
-### `seaborn_ticks`
-
-Seaborn-like ticks grammar with cleaner spines and less grid emphasis.
-
-### `boxed_classic`
-
-Classic boxed Matplotlib academic style. Good for conservative reports, legacy paper reproductions, or when the user explicitly wants Matplotlib default/classic style.
-
-### `thesis_clean`
-
-Slightly larger-font report/thesis style, suitable for Word, PowerPoint, or thesis chapters.
-
-### `presentation_large`
-
-Large-font slide style. Use for presentations, defenses, or classroom explanation.
-
-### `cartoon_handdrawn`
-
-Readable sketch-style chart. It intentionally uses **subtle** path sketching, not Matplotlib's strong xkcd-like defaults. The current readable setting is approximately:
-
-```python
-path.sketch = (0.28, 140.0, 1.0)
-```
-
-This means low sketch amplitude, long correlation length, and low randomness. It keeps bars, axes, and labels quantitatively readable while still giving a hand-drawn feeling. The style also uses a single warm paper background for figure, axes, and saved output, so exported borders do not appear in a different color.
-
-Use it only for explanatory slides or informal conceptual figures. For formal main-paper results, prefer `publication_minimal`, `nature_journal`, `ieee_transactions`, or `neurips_ml`.
-
-### `dark_presentation`
-
-Dark-background style for slides/posters. Avoid for formal paper submission unless explicitly requested.
+- `scientific_heatmap`: heatmap/matrix-first style.
+- `monochrome_print`: black-and-white print style.
+- `dense_appendix`: compact supplement style.
+- `soft_pastel_journal`: soft friendly academic style without sketch jitter.
+- `cartoon_handdrawn`: readable hand-drawn style with subtle sketching.
+- `dark_presentation`: dark slide style.
+- `cyber_dark`: dark technical demo style.
 
 ## Decision rules
 
-- Main-paper results: prefer `publication_minimal`, `nature_journal`, `ieee_transactions`, `acm_conference`, or `neurips_ml`.
-- Statistical exploratory plots: allow `seaborn_whitegrid` or `seaborn_ticks`.
-- Thesis/report figures: use `thesis_clean`.
-- Slides: use `presentation_large` or `dark_presentation` if requested.
-- Explanatory informal charts: use `cartoon_handdrawn` only when the user asks for a hand-drawn/cartoon style.
-- Heatmaps generally do not need dense xy grids because the heatmap cells already define a grid.
-- Dense grouped bars benefit from black bar edges and hatch/marker redundancy.
-- If the style has a non-white background, never override export with `fig.savefig(..., facecolor="white")`; use the skill finalizer so `figure.facecolor`, `axes.facecolor`, and `savefig.facecolor` remain consistent.
+- Main-paper results: prefer `publication_minimal`, `nature_journal`, `science_compact`, `ieee_transactions`, `acm_conference`, or `neurips_ml`.
+- Statistical exploration: allow Seaborn-like or ggplot2-like presets.
+- Newsroom/report charts: allow Datawrapper/Economist/Financial-Times-like presets.
+- Dashboard output: use `tableau_dashboard`.
+- Heatmaps: prefer `scientific_heatmap` and sequential/diverging palettes.
+- Print: use `monochrome_print` plus marker or hatch redundancy.
+- Cute or anime-like requests: use `cartoon_handdrawn` only when explicitly requested; otherwise prefer `soft_pastel_journal`.
+- Dark backgrounds are for slides, demos, and posters, not normal paper submission.
