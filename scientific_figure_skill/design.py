@@ -20,6 +20,9 @@ _module = importlib.util.module_from_spec(_spec)
 sys.modules[_MODULE_NAME] = _module
 _spec.loader.exec_module(_module)
 
+from .handdrawn_fix import patch_design_module as _patch_design_module
+_module = _patch_design_module(_module)
+
 for _name in dir(_module):
     if not _name.startswith("_"):
         globals()[_name] = getattr(_module, _name)
