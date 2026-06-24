@@ -9,22 +9,23 @@ This repository is an Agent Skills project for generating publication-ready scie
 
 ## Primary objective
 
-Use this project when the user asks a coding agent to create, polish, or refactor Python/Matplotlib figures for papers, theses, reports, or research slides. The skill name is `scientific-figure-making`.
+Use this project when the user asks a coding agent to create, polish, or refactor Python/Matplotlib figures for papers, theses, reports, tables, or research slides. The skill name is `scientific-figure-making`.
 
 ## Design model
 
-The skill has three independent design layers:
+The skill has four independent design layers:
 
-1. **Palette engine**: color palette, generated palette variants, semantic color roles.
-2. **Chart-style engine**: venue/form preset, grid, spines, line widths, bar edges, markers, legend framing, hand-drawn/dark/presentation effects.
-3. **Font engine**: publication-safe font candidate registry, style-aware font scoring, and safe sans-serif correction for non-formal styles such as `cartoon_handdrawn`.
+1. **Palette engine**: color palette, generated palette variants, semantic color roles, categorical/sequential/diverging/cyclic/print-aware data roles.
+2. **Chart-style engine**: venue/form preset, grid, spines, line widths, bar edges, markers, legend framing, background, heatmap, hand-drawn, dark, and presentation effects.
+3. **Table-style engine**: paper three-line tables, compact appendix tables, DataFrame-style zebra tables, dashboard tables, editorial tables, and print-safe tables.
+4. **Font engine**: publication-safe font candidate registry, style-aware font scoring, and safe sans-serif correction for non-formal styles such as `cartoon_handdrawn`.
 
-Do not reduce chart design to color selection. `Nature科研风格`, `IEEE Transactions`, `seaborn whitegrid`, and `卡通手绘` imply different chart forms even if the palette is unchanged. Font choice is also separate: a cute hand-drawn chart should not silently inherit Times New Roman.
+Do not reduce chart design to color selection. `Nature科研风格`, `IEEE Transactions`, `seaborn whitegrid`, `ggplot2 theme_minimal`, `Datawrapper editorial`, `Tableau dashboard`, and `卡通手绘` imply different chart forms even if the palette is unchanged. Font choice is also separate: a cute hand-drawn chart should not silently inherit Times New Roman. Table style is separate again: a paper table should usually be three-line/booktabs-like, not a heavy dashboard grid.
 
 ## Canonical files
 
 - `skills/scientific-figure-making/SKILL.md`: canonical standalone skill package. Edit this first.
-- `skills/scientific-figure-making/scripts/figure_design.py`: heuristic palette and chart-style engine.
+- `skills/scientific-figure-making/scripts/figure_design.py`: heuristic palette, chart-style, and table-style engine.
 - `skills/scientific-figure-making/scripts/figure_fonts.py`: global-skill font selection helpers.
 - `skills/scientific-figure-making/scripts/figure_toolkit.py`: plotting helpers and legacy compatibility.
 - `skills/scientific-figure-making/scripts/preview_palette.py`: palette and style preview CLI.
@@ -32,6 +33,7 @@ Do not reduce chart design to color selection. `Nature科研风格`, `IEEE Trans
 - `skills/scientific-figure-making/references/font-workflow.md`: publication-safe font registry and workflow.
 - `skills/scientific-figure-making/references/palette-workflow.md`: palette heuristics and generated variants.
 - `skills/scientific-figure-making/references/style-workflow.md`: chart-style presets and venue/form rules.
+- `skills/scientific-figure-making/references/table-workflow.md`: table-style presets and rules.
 - `.agents/skills/scientific-figure-making/SKILL.md`: Codex repo-scoped wrapper.
 - `.claude/skills/scientific-figure-making/SKILL.md`: Claude Code project wrapper.
 - `scripts/install_global_skill.py`: installs the skill into user-level global directories.
@@ -92,10 +94,10 @@ Use this repository-local workflow for OpenCode because different OpenCode setup
 
 ## Figure-generation workflow
 
-1. Parse figure type, data shape, venue/chart style, palette preference, semantic roles, and output paths.
+1. Parse figure type, data shape, venue/chart style, palette preference, semantic roles, table style if applicable, and output paths.
 2. Prefer `auto_figure_design(...)` from `scientific_figure_skill` inside the repo, or `figure_design.py` from the global skill path.
 3. Use `FigureStyle(..., palette=design.palette.colors, chart_style=design.chart_style)` and `apply_publication_style(...)`.
-4. Use `make_grouped_bar(...)`, `make_trend(...)`, `make_heatmap(...)`, or raw Matplotlib as needed.
+4. Use `make_grouped_bar(...)`, `make_trend(...)`, `make_heatmap(...)`, `apply_table_style(...)`, or raw Matplotlib as needed.
 5. Export PNG and PDF unless the user asks otherwise.
 6. Run the generated plotting script.
 7. If Python package logic changes, run `python -m pytest -q`.
@@ -106,9 +108,12 @@ Use this repository-local workflow for OpenCode because different OpenCode setup
 - Do not rely only on exact keyword matching.
 - Prefer generated palette variants only when they improve readability or fit.
 - Do not confuse palette with chart style.
+- Do not confuse table style with chart style.
 - Do not use seaborn unless explicitly requested; use seaborn-like Matplotlib presets instead.
 - Prefer semantic color roles: proposed, baseline, secondary, ablation, neutral, highlight.
 - Use the publication-safe font registry; do not use Times New Roman for cute, anime, hand-drawn, or informal chart styles.
 - For heatmaps, choose sequential or diverging palettes according to the data semantics.
+- For phase, angle, or periodic data, use cyclic palettes.
 - For black-and-white print, use grayscale plus hatching or marker styles.
+- For paper tables, prefer three-line/booktabs-like sparse rules.
 - Always provide exact output paths.
