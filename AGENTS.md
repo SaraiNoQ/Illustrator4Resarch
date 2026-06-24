@@ -10,14 +10,24 @@ This repository is an Agent Skills project for generating publication-ready scie
 
 Use this project when the user asks a coding agent to create, polish, or refactor Python/Matplotlib figures for papers, theses, reports, or research slides. The skill name is `scientific-figure-making`.
 
+## Design model
+
+The skill has two independent design layers:
+
+1. **Palette engine**: color palette, generated palette variants, semantic color roles.
+2. **Chart-style engine**: venue/form preset, fonts, grid, spines, line widths, bar edges, markers, legend framing, hand-drawn/dark/presentation effects.
+
+Do not reduce chart design to color selection. `Nature科研风格`, `IEEE Transactions`, `seaborn whitegrid`, and `卡通手绘` imply different chart forms even if the palette is unchanged.
+
 ## Canonical files
 
 - `skills/scientific-figure-making/SKILL.md`: canonical standalone skill package. Edit this first.
-- `skills/scientific-figure-making/scripts/figure_toolkit.py`: standalone helper for global installs.
-- `skills/scientific-figure-making/scripts/preview_palette.py`: palette preview CLI.
-- `skills/scientific-figure-making/references/global-installation.md`: install instructions.
+- `skills/scientific-figure-making/scripts/figure_design.py`: heuristic palette and chart-style engine.
+- `skills/scientific-figure-making/scripts/figure_toolkit.py`: plotting helpers and legacy compatibility.
+- `skills/scientific-figure-making/scripts/preview_palette.py`: palette and style preview CLI.
 - `skills/scientific-figure-making/references/api-usage.md`: API examples.
-- `skills/scientific-figure-making/references/palette-workflow.md`: palette decision rules.
+- `skills/scientific-figure-making/references/palette-workflow.md`: palette heuristics and generated variants.
+- `skills/scientific-figure-making/references/style-workflow.md`: chart-style presets and venue/form rules.
 - `.agents/skills/scientific-figure-making/SKILL.md`: Codex repo-scoped wrapper.
 - `.claude/skills/scientific-figure-making/SKILL.md`: Claude Code project wrapper.
 - `scripts/install_global_skill.py`: installs the skill into user-level global directories.
@@ -32,18 +42,6 @@ Install for both Codex and Claude Code:
 python scripts/install_global_skill.py --target both
 ```
 
-Install for Codex only:
-
-```bash
-python scripts/install_global_skill.py --target codex
-```
-
-Install for Claude Code only:
-
-```bash
-python scripts/install_global_skill.py --target claude
-```
-
 Package as a shareable ZIP:
 
 ```bash
@@ -52,51 +50,45 @@ python scripts/package_skill.py
 
 ## Codex usage
 
-Codex user-level global path:
-
-```text
-~/.agents/skills/scientific-figure-making/SKILL.md
-```
-
-Direct invocation example:
-
 ```text
 $scientific-figure-making
-Create a publication-ready grouped bar chart. Style: 简洁大气，Nature科研风格，色盲安全. Export PNG and PDF.
+Create a publication-ready grouped bar chart.
+Chart style: Nature-like compact journal style.
+Palette: 简洁大气，色盲安全.
+Export PNG and PDF.
 ```
 
 When working inside this repository, Codex can also read the repo wrapper at `.agents/skills/scientific-figure-making/SKILL.md`.
 
 ## Claude Code usage
 
-Claude Code personal global path:
-
-```text
-~/.claude/skills/scientific-figure-making/SKILL.md
-```
-
-Direct invocation example:
-
 ```text
 /scientific-figure-making
-请生成一张论文级 grouped bar，风格简洁大气、Nature科研风格、色盲安全，导出 PNG 和 PDF。
+请生成一张论文级 grouped bar。
+图表风格：IEEE Transactions 紧凑风格。
+配色要求：色盲安全，主方法突出。
+导出 PNG 和 PDF。
 ```
 
 When working inside this repository, Claude Code can also read the project wrapper at `.claude/skills/scientific-figure-making/SKILL.md`.
 
 ## Figure-generation workflow
 
-1. Parse figure type, data shape, target style, semantic roles, and output paths.
-2. Use `auto_palette(...)` from `scientific_figure_skill` when working inside the repo, or from `skills/scientific-figure-making/scripts/figure_toolkit.py` for standalone/global usage.
-3. Build a Matplotlib script with publication styling.
-4. Export PNG and PDF unless the user asks otherwise.
-5. Run the generated plotting script.
-6. If Python package logic changes, run `python -m pytest -q`.
+1. Parse figure type, data shape, venue/chart style, palette preference, semantic roles, and output paths.
+2. Prefer `auto_figure_design(...)` from `scientific_figure_skill` inside the repo, or `figure_design.py` from the global skill path.
+3. Use `FigureStyle(..., palette=design.palette.colors, chart_style=design.chart_style)` and `apply_publication_style(...)`.
+4. Use `make_grouped_bar(...)`, `make_trend(...)`, `make_heatmap(...)`, or raw Matplotlib as needed.
+5. Export PNG and PDF unless the user asks otherwise.
+6. Run the generated plotting script.
+7. If Python package logic changes, run `python -m pytest -q`.
 
 ## Quality rules
 
 - Do not use random colors.
-- Do not use seaborn unless explicitly requested.
+- Do not rely only on exact keyword matching.
+- Prefer generated palette variants only when they improve readability or fit.
+- Do not confuse palette with chart style.
+- Do not use seaborn unless explicitly requested; use seaborn-like Matplotlib presets instead.
 - Prefer semantic color roles: proposed, baseline, secondary, ablation, neutral, highlight.
 - For heatmaps, choose sequential or diverging palettes according to the data semantics.
 - For black-and-white print, use grayscale plus hatching or marker styles.
