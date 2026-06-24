@@ -1,11 +1,12 @@
 # scientific-figure-making
 
-A global-installable Agent Skill for publication-ready Python/Matplotlib scientific figures with automatic palette and chart-style selection.
+A global-installable Agent Skill for publication-ready Python/Matplotlib scientific figures with automatic palette, chart-style, and font selection.
 
-This skill separates two concepts:
+This skill separates three concepts:
 
 - **Palette**: color choice and semantic color roles.
-- **Chart style**: plot grammar, including fonts, grids, spines, linewidths, bar edges, markers, legends, and optional hand-drawn/dark/presentation forms.
+- **Chart style**: plot grammar, including grids, spines, linewidths, bar edges, markers, legends, and optional hand-drawn/dark/presentation forms.
+- **Font**: publication-safe font stack selection, including non-serif stacks for cartoon/anime/cute/hand-drawn styles.
 
 ## Install globally for Codex
 
@@ -46,6 +47,17 @@ Palette: 色盲安全，主方法突出.
 Export PNG and PDF.
 ```
 
+Hand-drawn/anime-style request:
+
+```text
+/scientific-figure-making
+请根据数据画一张 grouped bar。
+图表风格：二次元、可爱、手绘风格。
+配色要求：清新自然，色盲安全，主方法突出。
+字体要求：使用期刊可接受的非衬线字体，不要 Times New Roman。
+导出 PNG 和 PDF。
+```
+
 ## Python usage from a global install
 
 ```python
@@ -55,20 +67,23 @@ sys.path.insert(0, str(Path("~/.agents/skills/scientific-figure-making/scripts")
 # Claude Code path: ~/.claude/skills/scientific-figure-making/scripts
 
 from figure_design import auto_figure_design, FigureStyle, apply_publication_style
+from figure_fonts import select_font_family
 from figure_toolkit import make_grouped_bar, finalize_figure
 
-design = auto_figure_design(
-    "Nature科研风格，简洁大气，色盲安全，多方法柱状图",
-    figure_type="grouped_bar",
-    n_colors=5,
-)
+request = "二次元、可爱、手绘风格，色盲安全，多方法柱状图"
+design = auto_figure_design(request, figure_type="grouped_bar", n_colors=5)
+font_family = select_font_family(request, chart_style=design.chart_style)
+
 style = FigureStyle(
     palette=design.palette.colors,
     color_roles=design.palette.color_roles,
     chart_style=design.chart_style,
+    font_family=font_family,
 )
 apply_publication_style(style)
 ```
+
+Inside the repository package, `cartoon_handdrawn` automatically replaces Times-like/default font stacks with a safe sans-serif stack.
 
 ## Preview design selection
 
@@ -82,7 +97,9 @@ The preview prints both palette candidates and the selected chart-style preset.
 
 - `SKILL.md`: agent-facing instructions.
 - `scripts/figure_design.py`: heuristic palette and chart-style engine.
+- `scripts/figure_fonts.py`: publication-safe font stack selector for standalone global scripts.
 - `scripts/figure_toolkit.py`: plotting helpers and legacy compatibility.
 - `references/palette-workflow.md`: palette heuristics and generated variants.
 - `references/style-workflow.md`: chart-style presets and venue/form rules.
+- `references/font-workflow.md`: font registry and selection rules.
 - `references/api-usage.md`: Python API examples.
