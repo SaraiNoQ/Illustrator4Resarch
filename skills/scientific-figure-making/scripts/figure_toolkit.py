@@ -22,6 +22,8 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap, to_rgba
 
+ROLE_ORDER = ("proposed", "baseline", "secondary", "ablation", "neutral", "highlight", "improvement", "uncertainty")
+
 
 @dataclass(frozen=True)
 class PaletteCandidate:
@@ -80,7 +82,7 @@ PALETTE_REGISTRY: dict[str, PaletteCandidate] = {
     "minimal_blue_gray": _p("minimal_blue_gray", ["#1F4E79", "#6C8EBF", "#A6A6A6", "#D9D9D9", "#404040"], "categorical", "curated-publication", ["minimal", "clean", "simple", "blue", "gray", "简洁", "大气", "克制", "黑白"], "Conservative blue-gray palette.", True, True, 1.22),
     "okabe_ito": _p("okabe_ito", ["#0072B2", "#E69F00", "#009E73", "#D55E00", "#CC79A7", "#56B4E9", "#F0E442", "#000000"], "categorical", "Okabe-Ito-style", ["colorblind", "safe", "categorical", "high_contrast", "色盲", "高对比", "多方法"], "Colorblind-safe categorical palette.", True, True, 1.35),
     "tol_bright": _p("tol_bright", ["#4477AA", "#EE6677", "#228833", "#CCBB44", "#66CCEE", "#AA3377", "#BBBBBB"], "categorical", "Tol-style", ["colorblind", "bright", "categorical", "clean", "色盲", "高对比", "现代"], "Bright colorblind-safe categorical palette.", True, True, 1.30),
-    "brewer_set2": _p("brewer_set2", ["#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3"], "categorical", "ColorBrewer-like", ["colorbrewer", "set2", "soft", "categorical", "qualitative", "柔和", "多方法"], "Soft qualitative palette.", False, False, 1.10),
+    "brewer_set2": _p("brewer_set2", ["#66C2A5", "#FC8D62", "#8DA0CB", "#E78AC3", "#A6D854", "#FFD92F", "#E5C494", "#B3B3B3"], "categorical", "ColorBrewer-like", ["colorbrewer", "set2", "soft", "categorical", "qualitative", "柔和", "多方法", "清新", "自然"], "Soft qualitative palette.", False, False, 1.10),
     "cividis_sample": _p("cividis_sample", ["#00204C", "#263C6A", "#575D6D", "#7F7C75", "#A59C74", "#D9C55E", "#FFFFE0"], "sequential", "cividis-style", ["cividis", "scientific", "sequential", "heatmap", "colorblind", "print", "色盲", "热力图"], "CVD-optimized blue-yellow scientific palette.", True, True, 1.35),
     "viridis_sample": _p("viridis_sample", ["#440154", "#414487", "#2A788E", "#22A884", "#7AD151", "#FDE725"], "sequential", "Matplotlib scientific sample", ["viridis", "scientific", "sequential", "heatmap", "perceptual", "色盲", "热力图", "连续"], "Perceptually ordered scientific palette.", True, True, 1.30),
     "blue_sequential": _p("blue_sequential", ["#F7FBFF", "#DEEBF7", "#C6DBEF", "#9ECAE1", "#6BAED6", "#3182BD", "#08519C"], "sequential", "ColorBrewer-like", ["blue", "sequential", "heatmap", "clean", "minimal", "简洁", "连续"], "Clean blue sequential palette.", True, True, 1.15),
@@ -90,9 +92,9 @@ PALETTE_REGISTRY: dict[str, PaletteCandidate] = {
 }
 
 TOKEN_TAGS = {
-    "简洁": ("minimal", "clean"), "大气": ("clean", "high_impact"), "柔和": ("soft", "muted"), "科研": ("paper", "scientific"), "论文": ("paper", "scientific"),
-    "色盲": ("colorblind", "safe"), "黑白": ("grayscale", "print"), "打印": ("print", "grayscale"), "热力图": ("heatmap", "sequential"),
-    "正负": ("diverging", "difference"), "差异": ("diverging", "difference"), "对比": ("categorical", "comparison"), "消融": ("categorical", "ablation"),
+    "简洁": ("minimal", "clean"), "大气": ("clean", "high_impact"), "柔和": ("soft", "muted"), "清新": ("soft", "natural"), "自然": ("soft", "natural"),
+    "科研": ("paper", "scientific"), "论文": ("paper", "scientific"), "色盲": ("colorblind", "safe"), "黑白": ("grayscale", "print"), "打印": ("print", "grayscale"),
+    "热力图": ("heatmap", "sequential"), "正负": ("diverging", "difference"), "差异": ("diverging", "difference"), "对比": ("categorical", "comparison"), "消融": ("categorical", "ablation"),
     "nature": ("nature", "muted", "soft"), "ieee": ("ieee", "engineering"), "minimal": ("minimal", "clean"), "clean": ("minimal", "clean"),
     "colorblind": ("colorblind", "safe"), "heatmap": ("heatmap", "sequential"), "diverging": ("diverging", "difference"), "print": ("print", "grayscale"),
     "bar": ("categorical",), "line": ("categorical",), "scatter": ("categorical",),
@@ -157,8 +159,7 @@ def _roles(candidate: PaletteCandidate) -> dict[str, str]:
     colors = list(candidate.colors)
     if candidate.kind in {"sequential", "diverging", "grayscale"}:
         return {"low": colors[0], "mid": colors[len(colors) // 2], "high": colors[-1], "neutral": "#F7F7F7"}
-    roles = ["proposed", "baseline", "secondary", "ablation", "neutral", "highlight", "uncertainty"]
-    return {role: colors[i % len(colors)] for i, role in enumerate(roles)}
+    return {role: colors[i % len(colors)] for i, role in enumerate(ROLE_ORDER)}
 
 
 def build_llm_palette_selection_prompt(request: str, figure_type: str | None, candidates: Sequence[PaletteCandidate], n_colors: int | None = None, extra_context: str | None = None) -> str:
@@ -250,6 +251,11 @@ def apply_publication_style(style: FigureStyle | None = None) -> FigureStyle:
         "pdf.fonttype": 42,
         "ps.fonttype": 42,
         "text.usetex": style.use_tex,
+        "figure.facecolor": "white",
+        "axes.facecolor": "white",
+        "savefig.facecolor": "white",
+        "savefig.edgecolor": "white",
+        "path.sketch": None,
     })
     mpl.rcParams["axes.prop_cycle"] = mpl.cycler(color=resolve_palette(style.palette))
     return style
@@ -339,16 +345,36 @@ def make_heatmap(ax, matrix: Sequence[Sequence[float]], x_labels: Sequence[str] 
     return im
 
 
-def finalize_figure(fig, out_path: str | Path, formats: Sequence[str] | None = None, dpi: int = 300, close: bool = True, pad: float = 0.05) -> list[Path]:
+def harmonize_figure_background(fig, facecolor: str | None = None, axes: str | None = None, include_colorbars: bool = True):
+    """Set figure, savefig, and axes patches to a coherent background.
+
+    This prevents the common exported-image artifact where the plotting area is
+    warm/off-white but the cropped border is pure white or tinted by the viewer.
+    """
+    figure_color = facecolor or mpl.rcParams.get("figure.facecolor", "white")
+    axes_color = axes or mpl.rcParams.get("axes.facecolor", figure_color)
+    fig.patch.set_facecolor(figure_color)
+    fig.patch.set_edgecolor(figure_color)
+    for ax in fig.axes:
+        if include_colorbars or not getattr(ax, "_colorbar", False):
+            ax.set_facecolor(axes_color)
+    return fig
+
+
+def finalize_figure(fig, out_path: str | Path, formats: Sequence[str] | None = None, dpi: int = 300, close: bool = True, pad: float = 0.05, facecolor: str | None = None, edgecolor: str | None = None, harmonize_background: bool = True) -> list[Path]:
     out_path = Path(out_path)
     out_path.parent.mkdir(parents=True, exist_ok=True)
     stem = out_path.with_suffix("") if out_path.suffix else out_path
     formats = list(formats) if formats is not None else ([out_path.suffix.lstrip(".")] if out_path.suffix else ["png", "pdf"])
+    if harmonize_background:
+        harmonize_figure_background(fig, facecolor=facecolor)
+    save_facecolor = facecolor if facecolor is not None else fig.get_facecolor()
+    save_edgecolor = edgecolor if edgecolor is not None else save_facecolor
     fig.tight_layout(pad=2)
     saved: list[Path] = []
     for fmt in formats:
         path = stem.with_suffix(f".{fmt.lower().lstrip('.')}")
-        fig.savefig(path, dpi=dpi, bbox_inches="tight", pad_inches=pad, facecolor="white")
+        fig.savefig(path, dpi=dpi, bbox_inches="tight", pad_inches=pad, facecolor=save_facecolor, edgecolor=save_edgecolor, transparent=False)
         saved.append(path)
     if close:
         plt.close(fig)
