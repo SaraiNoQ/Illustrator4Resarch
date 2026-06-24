@@ -50,6 +50,20 @@ def harmonize_figure_background(fig, facecolor: str | None = None, axes: str | N
     return fig
 
 
+def _make_finalize_wrapper(original_finalize):
+    def finalize_figure_readable(fig, *args, facecolor=None, harmonize_background=True, **kwargs):
+        if harmonize_background:
+            harmonize_figure_background(fig, facecolor=facecolor)
+        try:
+            return original_finalize(fig, *args, facecolor=facecolor, harmonize_background=harmonize_background, **kwargs)
+        except TypeError:
+            # Backward compatibility for older finalizers that do not accept
+            # facecolor/harmonize_background. The rc background is already set
+            # and the figure patch has already been harmonized.
+            return original_finalize(fig, *args, **kwargs)
+    return finalize_figure_readable
+
+
 def patch_design_module(module: Any) -> Any:
     """Patch an imported figure_design module in place."""
     registry = getattr(module, "CHART_STYLE_REGISTRY", {})
@@ -66,6 +80,8 @@ def patch_design_module(module: Any) -> Any:
     original_apply_chart_style = getattr(module, "apply_chart_style", None)
     original_apply_publication_style = getattr(module, "apply_publication_style", None)
     original_finalize = getattr(module, "finalize_figure", None)
+    if original_finalize is None:
+        original_finalize = getattr(getattr(module, "_base", None), "finalize_figure", None)
 
     if callable(original_apply_chart_style):
         def apply_chart_style_readable(preset=None, request=None, figure_type=None, venue=None):
@@ -100,11 +116,7 @@ def patch_design_module(module: Any) -> Any:
         module.apply_publication_style = apply_publication_style_readable
 
     if callable(original_finalize):
-        def finalize_figure_readable(fig, *args, facecolor=None, harmonize_background=True, **kwargs):
-            if harmonize_background:
-                harmonize_figure_background(fig, facecolor=facecolor)
-            return original_finalize(fig, *args, facecolor=facecolor, harmonize_background=harmonize_background, **kwargs)
-        module.finalize_figure = finalize_figure_readable
+        module.finalize_figure = _make_finalize_wrapper(original_finalize)
 
     module.HANDDRAWN_BG = HANDDRAWN_BG
     module.HANDDRAWN_SKETCH = HANDDRAWN_SKETCH
