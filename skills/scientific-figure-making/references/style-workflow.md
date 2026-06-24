@@ -14,6 +14,7 @@ This separation matters because different journals, conferences, and use cases p
 3. Call `auto_palette(...)` or `auto_figure_design(...)` separately for color selection.
 4. Apply the chosen form with `apply_publication_style(FigureStyle(..., chart_style=...))`.
 5. Use the selected style only when it fits the figure purpose. For example, `cartoon_handdrawn` is appropriate for explanatory slides, not formal paper main results.
+6. When a non-white style is active, call `finalize_figure(...)` or `harmonize_figure_background(fig)` rather than saving manually with `facecolor="white"`.
 
 ## One-call design
 
@@ -78,7 +79,15 @@ Large-font slide style. Use for presentations, defenses, or classroom explanatio
 
 ### `cartoon_handdrawn`
 
-Sketch-style chart using Matplotlib path sketching. Use only for explanatory slides or informal conceptual figures.
+Readable sketch-style chart. It intentionally uses **subtle** path sketching, not Matplotlib's strong xkcd-like defaults. The current readable setting is approximately:
+
+```python
+path.sketch = (0.28, 140.0, 1.0)
+```
+
+This means low sketch amplitude, long correlation length, and low randomness. It keeps bars, axes, and labels quantitatively readable while still giving a hand-drawn feeling. The style also uses a single warm paper background for figure, axes, and saved output, so exported borders do not appear in a different color.
+
+Use it only for explanatory slides or informal conceptual figures. For formal main-paper results, prefer `publication_minimal`, `nature_journal`, `ieee_transactions`, or `neurips_ml`.
 
 ### `dark_presentation`
 
@@ -93,3 +102,4 @@ Dark-background style for slides/posters. Avoid for formal paper submission unle
 - Explanatory informal charts: use `cartoon_handdrawn` only when the user asks for a hand-drawn/cartoon style.
 - Heatmaps generally do not need dense xy grids because the heatmap cells already define a grid.
 - Dense grouped bars benefit from black bar edges and hatch/marker redundancy.
+- If the style has a non-white background, never override export with `fig.savefig(..., facecolor="white")`; use the skill finalizer so `figure.facecolor`, `axes.facecolor`, and `savefig.facecolor` remain consistent.
