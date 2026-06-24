@@ -8,7 +8,14 @@ from scientific_figure_skill import (
     auto_figure_design,
     build_llm_chart_style_prompt,
     CHART_STYLE_REGISTRY,
+    apply_publication_style,
+    FigureStyle,
+    HANDDRAWN_BG,
+    HANDDRAWN_SKETCH,
+    harmonize_figure_background,
 )
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 
 def test_auto_palette():
@@ -63,3 +70,31 @@ def test_chart_style_prompt():
 def test_style_registry_available():
     assert "publication_minimal" in CHART_STYLE_REGISTRY
     assert "cartoon_handdrawn" in CHART_STYLE_REGISTRY
+
+
+def test_handdrawn_sketch_is_subtle_and_readable():
+    preset = resolve_chart_style("二次元手绘风格", figure_type="grouped_bar")
+    assert preset.name == "cartoon_handdrawn"
+    assert getattr(preset, "sketch_params") == HANDDRAWN_SKETCH
+    scale, length, randomness = HANDDRAWN_SKETCH
+    assert 0 < scale < 0.5
+    assert length >= 120
+    assert randomness <= 1.25
+    apply_publication_style(FigureStyle(chart_style="cartoon_handdrawn"))
+    assert mpl.rcParams["path.sketch"] == HANDDRAWN_SKETCH
+
+
+def test_non_handdrawn_resets_sketch():
+    apply_publication_style(FigureStyle(chart_style="cartoon_handdrawn"))
+    assert mpl.rcParams["path.sketch"] is not None
+    apply_publication_style(FigureStyle(chart_style="publication_minimal"))
+    assert mpl.rcParams["path.sketch"] is None
+
+
+def test_handdrawn_background_is_harmonized():
+    apply_publication_style(FigureStyle(chart_style="cartoon_handdrawn"))
+    fig, ax = plt.subplots()
+    harmonize_figure_background(fig)
+    assert fig.get_facecolor() == mpl.colors.to_rgba(HANDDRAWN_BG)
+    assert ax.get_facecolor() == mpl.colors.to_rgba(HANDDRAWN_BG)
+    plt.close(fig)
