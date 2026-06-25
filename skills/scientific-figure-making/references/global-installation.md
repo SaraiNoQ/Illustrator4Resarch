@@ -51,12 +51,37 @@ Then invoke the skill from any project:
 
 If Claude Code was already running before the skill directory existed, restart the session. If only `SKILL.md` changed while the directory was already watched, Claude Code should detect the change automatically.
 
+## Hermes install
+
+The installer supports Hermes with this default skill root:
+
+```text
+~/.hermes/skills
+```
+
+Install manually:
+
+```bash
+mkdir -p ~/.hermes/skills
+rm -rf ~/.hermes/skills/scientific-figure-making
+cp -R skills/scientific-figure-making ~/.hermes/skills/scientific-figure-making
+```
+
+If your Hermes deployment scans a different directory, use that directory instead of `~/.hermes/skills`, or set `HERMES_SKILLS_DIR` when using the one-command installer.
+
+Example prompt:
+
+```text
+Use the scientific-figure-making skill from ~/.hermes/skills/scientific-figure-making/SKILL.md.
+Create a publication-ready grouped bar chart. Style: Datawrapper-like clean editorial style. Export PNG and PDF.
+```
+
 ## One-command install from this repository
 
 From the repository root:
 
 ```bash
-python scripts/install_global_skill.py --target both
+python scripts/install_global_skill.py --target all
 ```
 
 Available targets:
@@ -64,8 +89,20 @@ Available targets:
 ```bash
 python scripts/install_global_skill.py --target codex
 python scripts/install_global_skill.py --target claude
-python scripts/install_global_skill.py --target both
+python scripts/install_global_skill.py --target hermes
+python scripts/install_global_skill.py --target both   # Codex + Claude Code
+python scripts/install_global_skill.py --target all    # Codex + Claude Code + Hermes
 ```
+
+Override runtime-specific skill roots when needed:
+
+```bash
+CODEX_SKILLS_DIR=/custom/codex/skills python scripts/install_global_skill.py --target codex
+CLAUDE_SKILLS_DIR=/custom/claude/skills python scripts/install_global_skill.py --target claude
+HERMES_SKILLS_DIR=/custom/hermes/skills python scripts/install_global_skill.py --target hermes
+```
+
+The installer removes any existing target directory before copying the current canonical skill package, so repeated installs are safe.
 
 ## Package as ZIP
 
@@ -97,4 +134,4 @@ scientific-figure-making/
     └── preview_palette.py
 ```
 
-`agents/openai.yaml` is useful for Codex UI metadata but not required for Claude Code.
+`agents/openai.yaml` is useful for Codex UI metadata but not required for Claude Code or Hermes.
