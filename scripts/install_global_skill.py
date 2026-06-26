@@ -1,43 +1,50 @@
 #!/usr/bin/env python3
-"""Install the scientific-figure-making skill into global agent skill directories."""
+"""Install scientific-figure-making into global tool directories."""
 from __future__ import annotations
 
 import argparse
+import os
 import shutil
 from dataclasses import dataclass
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-SOURCE = ROOT / "skills" / "scientific-figure-making"
-CODEX_DEST = Path.home() / ".agents" / "skills" / "scientific-figure-making"
-CLAUDE_DEST = Path.home() / ".claude" / "skills" / "scientific-figure-making"
+SKILL_NAME = "scientific-figure-making"
+SOURCE = ROOT / "skills" / SKILL_NAME
+
+
+def skills_root_from_env(env_var: str, default: Path) -> Path:
+    raw_value = os.environ.get(env_var)
+    if raw_value:
+        return Path(raw_value).expanduser()
+    return default
+
+
+CODEX_DEST = skills_root_from_env("CODEX_SKILLS_DIR", Path.home() / ".agents" / "skills") / SKILL_NAME
+CLAUDE_DEST = skills_root_from_env("CLAUDE_SKILLS_DIR", Path.home() / ".claude" / "skills") / SKILL_NAME
+HERMES_DEST = skills_root_from_env("HERMES_SKILLS_DIR", Path.home() / ".hermes" / "skills") / SKILL_NAME
 
 
 @dataclass(frozen=True)
 class InstallTarget:
-    """Global installation target for one agent runtime."""
-
     name: str
     destination: Path
     remove_codex_metadata: bool = False
 
 
 INSTALL_TARGETS = {
-    "codex": InstallTarget(
-        name="Codex",
-        destination=CODEX_DEST,
-        remove_codex_metadata=False,
-    ),
-    "claude": InstallTarget(
-        name="Claude Code",
-        destination=CLAUDE_DEST,
-        remove_codex_metadata=True,
-    ),
+    "codex": InstallTarget("Codex", CODEX_DEST, False),
+    "claude": InstallTarget("Claude Code", CLAUDE_DEST, True),
+    "hermes": InstallTarget("Hermes", HERMES_DEST, False),
+}
+
+TARGET_ALIASES = {
+    "both": ["codex", "claude"],
+    "all": ["codex", "claude", "hermes"],
 }
 
 
 def ensure_source_exists() -> None:
-    """Fail early if the canonical skill package is missing."""
     if not SOURCE.exists():
         raise FileNotFoundError(f"Missing source skill directory: {SOURCE}")
     if not SOURCE.is_dir():
@@ -47,22 +54,14 @@ def ensure_source_exists() -> None:
 
 
 def path_exists(path: Path) -> bool:
-    """Return True for normal paths and broken symlinks."""
     return path.exists() or path.is_symlink()
 
 
 def looks_like_installed_skill(path: Path) -> bool:
-    """Best-effort check for an existing scientific-figure-making installation."""
     return path.is_dir() and (path / "SKILL.md").exists()
 
 
 def remove_existing_installation(destination: Path, *, label: str) -> bool:
-    """Delete a previous installation or stale path before reinstalling.
-
-    The installer owns the exact destination path for the selected target. If that
-    path already exists, replacing it is safer than merging directories because
-    old helper scripts, references, or metadata files can otherwise survive.
-    """
     if not path_exists(destination):
         print(f"[{label}] No existing skill found at {destination}")
         return False
@@ -80,7 +79,6 @@ def remove_existing_installation(destination: Path, *, label: str) -> bool:
 
 
 def copy_skill(destination: Path, *, remove_codex_metadata: bool = False, label: str = "skill") -> bool:
-    """Install the canonical skill package and return whether a previous path was removed."""
     ensure_source_exists()
     destination.parent.mkdir(parents=True, exist_ok=True)
 
@@ -97,19 +95,17 @@ def copy_skill(destination: Path, *, remove_codex_metadata: bool = False, label:
 
 
 def selected_targets(target: str) -> list[InstallTarget]:
-    """Expand CLI target aliases into concrete install targets."""
-    if target in {"both", "all"}:
-        return [INSTALL_TARGETS["codex"], INSTALL_TARGETS["claude"]]
-    return [INSTALL_TARGETS[target]]
+    target_keys = TARGET_ALIASES.get(target, [target])
+    return [INSTALL_TARGETS[target_key] for target_key in target_keys]
 
 
 def main() -> None:
-    parser = argparse.ArgumentParser(description="Install scientific-figure-making globally for Codex and/or Claude Code.")
+    parser = argparse.ArgumentParser(description="Install scientific-figure-making globally.")
     parser.add_argument(
         "--target",
-        choices=["codex", "claude", "both", "all"],
+        choices=["codex", "claude", "hermes", "both", "all"],
         default="both",
-        help="Which global skill directory to install into. 'all' is an alias for 'both'.",
+        help="Target runtime. 'both' installs Codex and Claude Code; 'all' also installs Hermes.",
     )
     args = parser.parse_args()
 
@@ -120,7 +116,7 @@ def main() -> None:
             label=target.name,
         )
 
-    print("Done. Restart the agent session if it does not pick up the refreshed skill immediately.")
+    print("Done. Restart the session if it does not pick up the refreshed skill immediately.")
 
 
 if __name__ == "__main__":

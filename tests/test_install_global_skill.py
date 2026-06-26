@@ -56,7 +56,20 @@ def test_claude_install_removes_codex_metadata(tmp_path):
     assert not (destination / "agents").exists()
 
 
-def test_selected_targets_expands_all_alias():
-    targets = installer.selected_targets("all")
+def test_selected_targets_expands_both_alias():
+    targets = installer.selected_targets("both")
 
     assert [target.name for target in targets] == ["Codex", "Claude Code"]
+
+
+def test_selected_targets_expands_all_alias_with_hermes():
+    targets = installer.selected_targets("all")
+
+    assert [target.name for target in targets] == ["Codex", "Claude Code", "Hermes"]
+
+
+def test_selected_targets_accepts_hermes_only():
+    targets = installer.selected_targets("hermes")
+
+    assert [target.name for target in targets] == ["Hermes"]
+    assert str(targets[0].destination).endswith(".hermes/skills/scientific-figure-making")

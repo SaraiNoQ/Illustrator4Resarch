@@ -12,6 +12,7 @@
   <img alt="Codex" src="https://img.shields.io/badge/Codex-supported-111827" />
   <img alt="Claude Code" src="https://img.shields.io/badge/Claude%20Code-supported-D97706" />
   <img alt="OpenCode" src="https://img.shields.io/badge/OpenCode-supported-2563EB" />
+  <img alt="Hermes" src="https://img.shields.io/badge/Hermes-supported-0F766E" />
 </p>
 
 <p align="center">
@@ -49,9 +50,15 @@ cd Illustrator4Resarch
 python -m pip install -e .
 ```
 
-### 2. Install the global skill for Codex or Claude Code
+### 2. Install the global skill for Codex, Claude Code, or Hermes
 
-Install for both tools:
+Install for every supported global target:
+
+```bash
+python scripts/install_global_skill.py --target all
+```
+
+Install for the original Codex + Claude Code pair only:
 
 ```bash
 python scripts/install_global_skill.py --target both
@@ -69,7 +76,25 @@ Install for Claude Code only:
 python scripts/install_global_skill.py --target claude
 ```
 
-The installer is idempotent. If the target skill directory already exists, it removes the old installation first and then copies the current canonical skill package.
+Install for Hermes only:
+
+```bash
+python scripts/install_global_skill.py --target hermes
+```
+
+By default, Hermes installs to:
+
+```text
+~/.hermes/skills/scientific-figure-making
+```
+
+If your Hermes deployment uses a different skill root, override it explicitly:
+
+```bash
+HERMES_SKILLS_DIR=/path/to/hermes/skills python scripts/install_global_skill.py --target hermes
+```
+
+The installer is idempotent. If the target skill directory already exists, it removes the old installation first and then copies the current canonical skill package. The CLI default remains `--target both` for backward compatibility; use `--target all` when you also want Hermes.
 
 ### 3. Use it immediately
 
@@ -148,6 +173,31 @@ Validation: run the plotting script and fix any rendering issues.
 ```
 
 The OpenCode path is intentionally repository-local: it relies on `AGENTS.md` plus the canonical skill folder, so it works even when different OpenCode setups use different command/plugin conventions.
+
+### Hermes
+
+Install globally first:
+
+```bash
+python scripts/install_global_skill.py --target hermes
+```
+
+Then ask Hermes to use the installed skill:
+
+```text
+Use the scientific-figure-making skill from ~/.hermes/skills/scientific-figure-making/SKILL.md.
+Create a publication-ready grouped bar chart.
+Chart style: Datawrapper-like clean editorial style.
+Palette: colorblind-safe, proposed method highlighted, baselines visually distinct.
+Output: figures/main_comparison.png and figures/main_comparison.pdf.
+Validation: run the plotting script and fix any rendering issues.
+```
+
+For non-standard Hermes deployments, install to the directory that your Hermes instance scans:
+
+```bash
+HERMES_SKILLS_DIR=/path/to/hermes/skills python scripts/install_global_skill.py --target hermes
+```
 
 ## Python API
 
@@ -248,7 +298,7 @@ The canonical standalone skill package is:
 skills/scientific-figure-making/
 ```
 
-This folder is copied into global agent skill directories by `scripts/install_global_skill.py` and can also be packaged as a ZIP:
+This folder is copied into global Codex, Claude Code, and Hermes skill directories by `scripts/install_global_skill.py` and can also be packaged as a ZIP:
 
 ```bash
 python scripts/package_skill.py
@@ -259,27 +309,3 @@ Output:
 ```text
 dist/scientific-figure-making.zip
 ```
-
-## Development
-
-Run the test suite:
-
-```bash
-python -m pytest -q
-```
-
-Recommended checks after changing skill logic:
-
-```bash
-python -m pytest -q tests/test_font_selection.py
-python -m pytest -q tests/test_install_global_skill.py
-python -m pytest -q
-```
-
-Core quality rules:
-
-- Do not use random colors.
-- Do not confuse palette choice with chart-style choice.
-- Use controlled, publication-safe font families.
-- Export vector-friendly PDF and high-resolution PNG unless the user asks otherwise.
-- Run the generated plotting script and fix rendering issues before returning the final figure.
