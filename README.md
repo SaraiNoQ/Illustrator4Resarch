@@ -16,6 +16,7 @@
 </p>
 
 <p align="center">
+  <a href="#real-world-example">Real-world Example</a> ·
   <a href="#quick-start">Quick Start</a> ·
   <a href="#agent-workflows">Agent Workflows</a> ·
   <a href="#what-it-does">What it does</a> ·
@@ -42,6 +43,105 @@ Version 0.7 adds style-first orchestration. Give it raw results, a manuscript cl
 | Export QA | Validates and visually reviews actual outputs | DPI, signatures, blank renders, grayscale preview, collision review |
 
 The important design choice is that workflow, chart form, palette, chart style, table style, font, and QA are separate responsibilities. A good palette cannot rescue the wrong chart, and a successful Python process does not prove that labels are readable in the exported image.
+
+## Real-world Example
+
+This is an actual three-turn `scientific-figure-making` session, shown in order from an incomplete request to the refined paper figure.
+
+### Turn 1 — turn raw results into a visual contract
+
+**User**
+
+```text
+$scientific-figure-making
+请根据下面的实验结果制作论文主结果图。
+重点展示 Proposed 方法整体表现更好，
+但我还没有决定用什么图、配色和版式。
+```
+
+The user also pasted 16 accuracy/error results covering four methods and four datasets.
+
+**What the skill did**
+
+1. Read the data and identified the intended claim: `Proposed` is strongest on every dataset.
+2. Recommended a horizontal grouped dot-interval chart.
+3. Asked about venue, chart grammar, palette, typography, and layout.
+4. Only after those style questions, asked whether `error` meant SD, SE, or another uncertainty measure.
+
+No image was generated in this turn. That is intentional: unresolved style and scientific semantics keep formal rendering blocked.
+
+### Turn 2 — confirm the design, render, and inspect
+
+**User**
+
+```text
+AAAI 双栏；横向分组点区间图；
+莫兰迪色对照方法 + 多巴胺色 Proposed；
+Comic Sans MS；顶部右侧图例。
+error 是 3 个 seeds 的标准差，允许标注相对最佳基线的提升。
+```
+
+**What the skill did**
+
+- Recorded the confirmed choices in Figure Spec 1.1.
+- Generated reproducible Python, PNG, PDF, Spec, and QA artifacts.
+- Represented all 16 means and SD intervals, with gains of `+2.4`, `+3.2`, `+2.8`, and `+2.5` percentage points.
+- Visually inspected the first export, found a clipped right-side annotation, expanded the plotting range, and rerendered.
+- Passed all 9 deterministic export checks.
+
+**Result after turn 2**
+
+<p align="center">
+  <img
+    src="docs/assets/style-first-showcase-turn-2.png"
+    alt="Turn 2 result: the first reviewed horizontal dot-interval figure"
+    width="100%"
+  />
+</p>
+
+This version is scientifically complete, but the next user review found that the vertically offset points were not clearly grouped by dataset.
+
+### Turn 3 — refine the visual hierarchy without changing data
+
+**User**
+
+```text
+$scientific-figure-making
+当前图表无法确认每个点对应的 y 轴坐标是哪个数据集，请修复。
+```
+
+**What the skill did**
+
+- Inspected the current image and plotting script before editing.
+- Diagnosed the missing visual grouping between dataset rows.
+- Added alternating row bands, group separators, and stronger dataset labels.
+- Preserved every value, uncertainty interval, color, marker, and confirmed layout choice.
+- Rerendered and repeated color/grayscale visual QA, again passing all 9 checks.
+
+**Final result after turn 3**
+
+<p align="center">
+  <img
+    src="docs/assets/style-first-showcase-final.png"
+    alt="Turn 3 result: refined chart with dataset row bands and separators"
+    width="100%"
+  />
+</p>
+
+<details>
+<summary><strong>Open the final color and grayscale QA preview</strong></summary>
+
+<p align="center">
+  <img
+    src="docs/assets/style-first-showcase-qa.png"
+    alt="Side-by-side color and grayscale visual QA preview"
+    width="100%"
+  />
+</p>
+
+</details>
+
+Final delivery: **300 DPI**, **7 × 3.55 in**, **Figure Spec valid**, **9/9 deterministic QA checks passed**, and a reproducible PNG/PDF/code/spec/QA handoff. The three turns demonstrate style-first intake, confirmation-gated rendering, actual image inspection, and data-preserving refinement.
 
 ## Quick Start
 
