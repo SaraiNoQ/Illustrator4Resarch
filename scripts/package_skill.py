@@ -9,7 +9,7 @@ ROOT = Path(__file__).resolve().parents[1]
 SOURCE = ROOT / "skills" / "scientific-figure-making"
 DIST = ROOT / "dist"
 ZIP_PATH = DIST / "scientific-figure-making.zip"
-EXCLUDE_DIRS = {"__pycache__", ".pytest_cache"}
+EXCLUDE_DIRS = {"__pycache__", ".pytest_cache", "figures"}
 EXCLUDE_SUFFIXES = {".pyc", ".pyo", ".DS_Store"}
 
 

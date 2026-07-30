@@ -83,7 +83,13 @@ def copy_skill(destination: Path, *, remove_codex_metadata: bool = False, label:
     destination.parent.mkdir(parents=True, exist_ok=True)
 
     removed_existing = remove_existing_installation(destination, label=label)
-    shutil.copytree(SOURCE, destination)
+    shutil.copytree(
+        SOURCE,
+        destination,
+        ignore=shutil.ignore_patterns(
+            "__pycache__", ".pytest_cache", "figures", "*.pyc", "*.pyo", ".DS_Store"
+        ),
+    )
 
     if remove_codex_metadata:
         agents_dir = destination / "agents"

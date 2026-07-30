@@ -1,0 +1,5 @@
+dataset,method,accuracy,error
+CIFAR-10,Baseline,84.2,0.8
+CIFAR-10,Proposed,89.8,0.4
+CIFAR-100,Baseline,61.5,1.2
+CIFAR-100,Proposed,69.3,0.7

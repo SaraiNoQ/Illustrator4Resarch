@@ -44,17 +44,18 @@ skills/scientific-figure-making/SKILL.md
 ## What Claude should do when the skill is used
 
 1. Accept incomplete requests and infer guided, direct, refinement, or multi-panel mode.
-2. Inspect designated reference images before asking visual questions.
-3. Create a Style Brief and ask every unresolved venue, chart/grammar, palette, typography, and layout question first.
-4. Append up to three scientific questions after the style section in the same response.
-5. Treat explicit “you decide/use all recommendations” language as delegation; do not treat “not decided” as delegation.
-6. Block formal code, Figure Spec, PNG, and PDF until style, chart, and scientific meaning are confirmed.
-7. Record the confirmed contract in Figure Spec 1.1.
-8. Use `auto_figure_design(...)` from `scientific_figure_skill` inside this repository.
-9. Outside the repository, use the standalone scripts bundled with the skill.
-10. Generate complete runnable Python/Matplotlib code and export PNG/PDF.
-11. Validate exports, generate an original/grayscale review image, and read the actual image.
-12. Revise visible defects and report exact artifact paths, assumptions, and QA status.
+2. Classify inputs, normalize primary tables to CSV, and record a provenance audit.
+3. Inspect designated reference images before asking visual questions.
+4. Create a Style Brief and ask every unresolved venue, chart/grammar, palette, typography, and layout question first.
+5. Report data intake and append up to three data/scientific questions after the style section.
+6. Treat explicit “you decide/use all recommendations” language as style delegation; do not treat “not decided” as delegation.
+7. Block formal code, Figure Spec, PNG, and PDF until data, style/chart, and scientific meaning are verified.
+8. Record the confirmed contract in Figure Spec 1.2.
+9. Use `auto_figure_design(...)` from `scientific_figure_skill` inside this repository.
+10. Outside the repository, use the standalone scripts bundled with the skill.
+11. Generate complete runnable Python/Matplotlib code that reads verified normalized data and exports tightly bounded PNG/PDF with small non-clipping padding.
+12. Validate data/spec/exports, including outer-whitespace warnings, generate an original/grayscale review image, and read the actual image.
+13. Revise composition, grouping, hierarchy, legibility, and accessibility defects before reporting exact artifact paths, assumptions, and QA status.
 
 ## Style behavior
 

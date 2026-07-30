@@ -13,13 +13,22 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "1.1"
-SUPPORTED_SCHEMA_VERSIONS = {"1.0", SCHEMA_VERSION}
+from data_intake import validate_audit
+
+
+SCHEMA_VERSION = "1.2"
+SUPPORTED_SCHEMA_VERSIONS = {"1.0", "1.1", SCHEMA_VERSION}
 MODES = {"guided", "direct", "refine", "multi_panel"}
 METRIC_DIRECTIONS = {"higher", "lower", "mixed", "unknown"}
 QUESTION_SEVERITIES = {"critical", "preference"}
 CHART_SELECTION_STATUSES = {"recommended", "confirmed"}
 STYLE_STATUSES = {"pending", "confirmed"}
+DATA_VERIFICATION_STATUSES = {"pending", "verified"}
+DATA_VERIFICATION_METHODS = {
+    "deterministic_parse",
+    "user_confirmed",
+    "mixed",
+}
 STYLE_SOURCES = {
     "reference",
     "explicit_prompt",
@@ -72,9 +81,14 @@ def default_spec() -> dict[str, Any]:
         },
         "data": {
             "source": "",
+            "normalized_sources": [],
+            "intake_report": "",
+            "verification_status": "pending",
+            "verification_method": "",
             "structure": "",
             "metrics": [],
             "uncertainty": {"kind": "unknown", "source": None},
+            "transformations": [],
         },
         "chart": {
             "type": "",
@@ -162,7 +176,11 @@ def _string_list(
     return [item.strip() for item in value]
 
 
-def validate_spec(spec: Mapping[str, Any]) -> ValidationResult:
+def validate_spec(
+    spec: Mapping[str, Any],
+    *,
+    base_dir: str | Path | None = None,
+) -> ValidationResult:
     """Validate scientific blockers and the portable Figure Spec structure."""
     errors: list[ValidationIssue] = []
     warnings: list[ValidationIssue] = []
@@ -185,7 +203,24 @@ def validate_spec(spec: Mapping[str, Any]) -> ValidationResult:
                 "warning",
                 "schema_version",
                 "legacy schema 1.0 has no explicit style-confirmation record; "
-                "use schema 1.1 for new figures",
+                "use schema 1.2 for new figures",
+            )
+        )
+        warnings.append(
+            ValidationIssue(
+                "warning",
+                "schema_version",
+                "legacy schema 1.0 has no explicit data-verification record; "
+                "use schema 1.2 for new figures",
+            )
+        )
+    elif schema_version == "1.1":
+        warnings.append(
+            ValidationIssue(
+                "warning",
+                "schema_version",
+                "legacy schema 1.1 has no explicit data-verification record; "
+                "use schema 1.2 for new figures",
             )
         )
 
@@ -226,6 +261,117 @@ def validate_spec(spec: Mapping[str, Any]) -> ValidationResult:
 
     data = _mapping(spec.get("data"), "data", errors)
     _nonempty_text(data.get("source"), "data.source", errors)
+    if schema_version == SCHEMA_VERSION:
+        normalized_sources = _string_list(
+            data.get("normalized_sources"),
+            "data.normalized_sources",
+            errors,
+            allow_empty=False,
+        )
+        intake_report = _nonempty_text(
+            data.get("intake_report"),
+            "data.intake_report",
+            errors,
+        )
+        verification_status = _nonempty_text(
+            data.get("verification_status"),
+            "data.verification_status",
+            errors,
+        )
+        if (
+            verification_status
+            and verification_status not in DATA_VERIFICATION_STATUSES
+        ):
+            errors.append(
+                ValidationIssue(
+                    "error",
+                    "data.verification_status",
+                    f"must be one of {sorted(DATA_VERIFICATION_STATUSES)}",
+                )
+            )
+        elif verification_status == "pending":
+            errors.append(
+                ValidationIssue(
+                    "error",
+                    "data.verification_status",
+                    "is pending; verify normalized data before formal rendering",
+                )
+            )
+
+        verification_method = _nonempty_text(
+            data.get("verification_method"),
+            "data.verification_method",
+            errors,
+        )
+        if (
+            verification_method
+            and verification_method not in DATA_VERIFICATION_METHODS
+        ):
+            errors.append(
+                ValidationIssue(
+                    "error",
+                    "data.verification_method",
+                    f"must be one of {sorted(DATA_VERIFICATION_METHODS)}",
+                )
+            )
+        _string_list(
+            data.get("transformations"),
+            "data.transformations",
+            errors,
+            allow_empty=True,
+        )
+
+        if base_dir is not None:
+            spec_dir = Path(base_dir)
+            for index, raw_path in enumerate(normalized_sources):
+                path = Path(raw_path)
+                resolved = path if path.is_absolute() else spec_dir / path
+                if not resolved.is_file():
+                    errors.append(
+                        ValidationIssue(
+                            "error",
+                            f"data.normalized_sources[{index}]",
+                            f"file is missing: {resolved}",
+                        )
+                    )
+            if intake_report:
+                report_path = Path(intake_report)
+                resolved_report = (
+                    report_path
+                    if report_path.is_absolute()
+                    else spec_dir / report_path
+                )
+                if not resolved_report.is_file():
+                    errors.append(
+                        ValidationIssue(
+                            "error",
+                            "data.intake_report",
+                            f"file is missing: {resolved_report}",
+                        )
+                    )
+                else:
+                    try:
+                        audit = json.loads(
+                            resolved_report.read_text(encoding="utf-8")
+                        )
+                        if not isinstance(audit, dict):
+                            raise ValueError("audit root must be a JSON object")
+                        for issue in validate_audit(audit, resolved_report):
+                            errors.append(
+                                ValidationIssue(
+                                    "error",
+                                    "data.intake_report",
+                                    f"{issue['path']}: {issue['message']}",
+                                )
+                            )
+                    except (OSError, ValueError, json.JSONDecodeError) as exc:
+                        errors.append(
+                            ValidationIssue(
+                                "error",
+                                "data.intake_report",
+                                str(exc),
+                            )
+                        )
     _nonempty_text(data.get("structure"), "data.structure", errors)
     _string_list(data.get("metrics"), "data.metrics", errors, allow_empty=False)
     uncertainty = _mapping(data.get("uncertainty"), "data.uncertainty", errors)
@@ -253,7 +399,7 @@ def validate_spec(spec: Mapping[str, Any]) -> ValidationResult:
 
     chart = _mapping(spec.get("chart"), "chart", errors)
     chart_type = _nonempty_text(chart.get("type"), "chart.type", errors)
-    if schema_version == SCHEMA_VERSION:
+    if schema_version == "1.1" or schema_version == SCHEMA_VERSION:
         selection_status = _nonempty_text(
             chart.get("selection_status"),
             "chart.selection_status",
@@ -287,7 +433,7 @@ def validate_spec(spec: Mapping[str, Any]) -> ValidationResult:
         errors.append(ValidationIssue("error", "chart.panels", "must be a list"))
 
     design = _mapping(spec.get("design"), "design", errors)
-    if schema_version == SCHEMA_VERSION:
+    if schema_version == "1.1" or schema_version == SCHEMA_VERSION:
         style_status = _nonempty_text(
             design.get("style_status"),
             "design.style_status",
@@ -525,7 +671,10 @@ def _command_init(args: argparse.Namespace) -> int:
 
 
 def _command_validate(args: argparse.Namespace) -> int:
-    result = validate_spec(load_spec(args.spec))
+    result = validate_spec(
+        load_spec(args.spec),
+        base_dir=Path(args.spec).parent,
+    )
     if args.json:
         print(json.dumps(result.as_dict(), ensure_ascii=False, indent=2))
     else:

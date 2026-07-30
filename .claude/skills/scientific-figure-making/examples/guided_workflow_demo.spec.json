@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "mode": "guided",
   "research_goal": {
     "question": "Which method performs best across the four benchmark datasets?",
@@ -7,7 +7,13 @@
     "metric_direction": "higher"
   },
   "data": {
-    "source": "embedded in skills/scientific-figure-making/examples/guided_workflow_demo.py",
+    "source": "guided_workflow_demo.source.tex",
+    "normalized_sources": [
+      "guided_workflow_demo.data.csv"
+    ],
+    "intake_report": "guided_workflow_demo.data-audit.json",
+    "verification_status": "verified",
+    "verification_method": "deterministic_parse",
     "structure": "method_by_dataset",
     "metrics": [
       "Accuracy / Success Rate (%)"
@@ -15,7 +21,10 @@
     "uncertainty": {
       "kind": "none",
       "source": null
-    }
+    },
+    "transformations": [
+      "Parsed verified numeric strings as floats while preserving dataset and method order."
+    ]
   },
   "chart": {
     "type": "grouped_bar",
@@ -65,6 +74,7 @@
     "All 16 supplied values are represented exactly once.",
     "The y-axis starts at zero because bar length encodes magnitude.",
     "Every method remains distinguishable in the grayscale preview.",
-    "The legend and labels do not obscure data at final export size."
+    "The legend and labels do not obscure data at final export size.",
+    "Outer export margins are compact without clipping artists."
   ]
 }

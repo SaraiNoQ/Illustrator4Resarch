@@ -25,11 +25,15 @@ illegible sizing.
 Do not infer an exact font family from pixels with false confidence. Describe
 the category and use the closest available publication-safe fallback.
 
-If an image is attached but its role is unclear, ask whether it is:
+If an image is attached but its role is unclear, ask which one or more roles it
+has:
 
 1. a style reference;
 2. the existing figure to refine;
 3. a source of data or annotations.
+
+When it is a table data source, follow `data-intake.md`; extracting its visible
+style does not verify its transcribed numbers.
 
 ## 2. Audit five independent style dimensions
 
@@ -41,7 +45,7 @@ Mark each dimension `explicit`, `reference`, `delegated`, or `missing`.
 | Chart and grammar | Confirmed chart, usable reference grammar, or delegated recommendation | Confirm the recommended chart and axes/grid/annotation approach |
 | Palette/emphasis | Named palette, semantic colors, reference palette, or delegation | Preferred color mood and how the proposed method should stand out |
 | Typography | Font family/category, venue rule, reference direction, or delegation | Serif/sans direction and any mandatory typeface |
-| Layout | Column width, aspect/panels/legend from prompt or reference, or delegation | Single/double column, aspect, legend, and panel preference |
+| Layout | Column width, aspect/panels/legend/content density from prompt or reference, or delegation | Single/double column, aspect, legend, panel, and density preference |
 
 “I have not decided”, “not sure”, and “还没有决定” are unresolved requests for
 guidance. “You decide”, “use your recommendation”, “其他按默认”, and “全部按推荐”
@@ -104,9 +108,13 @@ PNG/PDF while the style gate is open. A temporary swatch or low-fidelity style
 preview is allowed when labelled clearly and when it does not imply unresolved
 scientific semantics.
 
+Compact outer export padding is an operational quality default, not another
+question the user must answer. Preserve deliberate breathing room inside the
+composition, but crop blank canvas outside the outermost visible artist.
+
 ## 5. Record the source
 
-Use one of these values in Figure Spec 1.1:
+Use one of these values in Figure Spec 1.2:
 
 - `reference`: resolved primarily from designated reference images;
 - `explicit_prompt`: specified directly in the request;

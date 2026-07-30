@@ -1,0 +1,407 @@
+
+› $scientific-figure-making [Image #1]请你将这个表格中的数据，转换成合适的论文插图
+
+
+• SessionStart (completed) says: PONYTAIL:FULL
+  hook context: PONYTAIL MODE ACTIVE — level: full
+
+    … +108 lines (ctrl + t to view transcript)
+
+• 我会按 scientific-figure-making 的流程先完成“图形方案 + 数据核对”两道确认；这张图是表格截图，所以在你确认
+  转录数据和视觉方案前，我不会把它误当成已核验原始数据直接出正式图。
+
+• Explored
+  └ Read style-intake.md, requirement-workflow.md, data-intake.md
+
+• Viewed Image
+  └ /var/folders/74/h38kw6ln2132p46dynks_l180000gn/T/codex-clipboard-0m4nf5.png
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• 我已按原始分辨率逐格检查。数据结构适合做“四面板横向点—误差线图”：每个指标一栏、方法按行共享顺序，STAR-AC
+  用强调色，其余基线/消融置灰；这样比 14×4 的分组柱图更清楚，也不会把接近的数值差异夸大。接下来先把截图转录
+  成可核对的 CSV。
+
+• Added figures/high_heterogeneity_ablation.data.csv (+15 -0)
+     1 +Variant,Walker2d mix,Walker2d worst,DMW mix,DMW worst
+     2 +STAR-AC,238.0 ± 24.2,144.0 ± 17.7,108.0 ± 9.3,80.0 ± 9.1
+     3 +FedHPD distill.,209.0 ± 23.5,120.0 ± 17.2,97.0 ± 9.1,68.0 ± 9.2
+     4 +Global teacher,170.0 ± 21.3,92.0 ± 17.7,82.0 ± 8.7,56.0 ± 9.5
+     5 +Similarity-only teacher,226.0 ± 23.8,133.0 ± 18.5,101.0 ± 8.9,73.0 ± 9.4
+     6 +Static target-cond. teacher,232.0 ± 23.1,138.0 ± 18.0,104.0 ± 8.8,76.0 ± 9.2
+     7 +No target conditioning,220.0 ± 25.4,121.0 ± 18.3,99.9 ± 9.8,69.7 ± 9.7
+     8 +No environment similarity,220.5 ± 25.6,126.0 ± 19.0,99.4 ± 9.7,70.0 ± 10.0
+     9 +No uncertainty,231.0 ± 26.7,135.0 ± 20.2,104.8 ± 10.3,76.0 ± 10.4
+    10 +No coverage,233.0 ± 26.9,137.0 ± 20.5,105.8 ± 10.4,76.8 ± 10.6
+    11 +No advantage weighting,226.0 ± 26.1,129.0 ± 19.4,102.6 ± 10.1,73.2 ± 10.1
+    12 +No trust region,228.0 ± 26.3,131.0 ± 19.7,103.5 ± 10.2,74.2 ± 10.2
+    13 +No communication skip,239.0 ± 24.0,145.0 ± 17.6,108.8 ± 9.2,80.5 ± 9.0
+    14 +Random routing,204.0 ± 23.6,103.0 ± 15.8,92.7 ± 9.1,61.5 ± 8.8
+    15 +Oracle routing,247.0 ± 23.1,155.0 ± 18.9,112.0 ± 8.9,84.9 ± 9.6
+
+• Ran python /Users/sarainoq/.agents/skills/scientific-figure-making/scripts/data_intake.py register /var/
+  │ folders/74/h38kw6ln2132p46dynks_l180000gn/T/codex-clipboard-0m4nf5.png --normalized figures/
+  │ high_heterogeneity_ablation.data.csv --report figures/high_heterogeneity_ablation.data-audit.json
+  │ … +1 lines
+  └ Registered data intake: PENDING
+    - audit: figures/high_heterogeneity_ablation.data-audit.json
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• ## Style Brief
+
+  - Reference： 当前截图作为数据源，不视为绘图风格参考。
+  - 使用场景： 尚未确定。
+  - 推荐图形： 1×4 横向点—误差线图，分别展示 Walker2d mix、Walker2d worst、DMW mix、DMW worst；四个面板共享
+    方法顺序。
+
+  - 颜色： STAR-AC 使用蓝绿色强调；Oracle routing 用深灰；其他基线与消融采用浅灰，并用不同标记区分。
+  - 字体： 推荐论文友好的无衬线字体。
+  - 布局： 双栏宽横图，方法名称只在最左侧显示，不设置图例。
+  - 已确认： 14 个方法、4 个指标，每格包含中心值和 ± 不确定性。
+  - 待确认： 使用场景、图形、配色、字体、版式。
+
+  ## Style questions
+
+  1. 使用场景： 是否用于特定会议/期刊？
+     推荐按通用 ML/CS 双栏论文设计；也可选择单栏、学位论文或幻灯片。
+
+  2. 图形形式： 是否采用推荐的四面板横向点—误差线图？
+     它比密集分组柱图更易比较 14 个方法，也能完整表达误差。
+
+  3. 配色： 是否采用“STAR-AC 蓝绿色强调、其他方法灰色”的色盲友好方案？
+     也可选择全黑白或指定颜色。
+
+  4. 字体： 是否采用无衬线论文风格？
+     也可使用与原表一致的衬线字体。
+
+  5. 布局： 是否按双栏宽度、1×4 横向排列？
+     如果方法名称过密，备选为 2×2 面板。
+
+  ## Scientific interpretation
+
+  - 研究问题： 比较 STAR-AC、完整基线、教师变体、组件消融及路由策略在两个环境、两种统计口径下的表现。
+  - 输入来源： 表格截图，作为 primary_data。
+  - 提取方式： 原始分辨率视觉转录。
+  - 标准化数据： 14 行 × 5 列，已保存为 figures/high_heterogeneity_ablation.data.csv。
+  - 数据审计： figures/high_heterogeneity_ablation.data-audit.json，当前状态为 PENDING。
+  - 转录警告： 未发现不可辨识单元格，但截图转录仍须人工确认。
+  - 暂定解释： 四项指标均为越高越好；点表示中心值，横向误差线表示 ± 后的量。
+
+  ## Scientific questions
+
+  1. 请确认 CSV 中的转录数据与原表一致。
+  2. ± 表示标准差、标准误还是置信区间？
+  3. 四项指标是否都为“越高越好”，并且允许分别在四个面板中使用各自的横轴范围？
+
+  你可以直接回复：“数据无误，± 是标准差，全部按推荐。”
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+
+› style:1.aaai会议的双栏插图2.推荐的四面板横向点—误差线图3.配色使用莫兰迪色4.无衬线字体5.按双栏宽度、1×4 横
+  向排列。question：1.确认数据无误，± 是标准差，全部按推荐
+
+
+• 样式、数据和科学语义三道确认已关闭。我会按 AAAI 双栏宽度制作 1×4 点—标准差图；莫兰迪配色会保留低饱和感，同
+  时用菱形标记和线宽强化 STAR-AC，确保灰度打印仍可识别。
+
+• Explored
+  └ Read chart-selection.md, figure-spec.md, visual-qa.md, palette-workflow.md, font-workflow.md
+
+◦ Searching the web
+
+• Searched the web for site:aaai.org AAAI 2026 author kit two column figure width
+
+• Ran python /Users/sarainoq/.agents/skills/scientific-figure-making/scripts/data_intake.py register /var/
+  │ folders/74/h38kw6ln2132p46dynks_l180000gn/T/codex-clipboard-0m4nf5.png --normalized figures/
+  │ high_heterogeneity_ablation.data.csv --report figures/high_heterogeneity_ablation.data-audit.json
+  │ … +1 lines
+  └ Registered data intake: VERIFIED
+    - audit: figures/high_heterogeneity_ablation.data-audit.json
+
+• Ran sed -n '1,240p' figures/high_heterogeneity_ablation.data-audit.json && python - <<'PY'
+  │ import matplotlib
+  │ print(matplotlib.__version__)
+  │ … +1 lines
+  └ /Users/sarainoq/.matplotlib is not a writable directory
+    Matplotlib created a temporary cache directory at /var/folders/74/h38kw6ln2132p46dynks_l180000gn/T/
+    … +2 lines (ctrl + t to view transcript)
+    up the import of Matplotlib and to better support multiprocessing.
+    3.11.0
+
+• Edited 2 files (+210 -0)
+  └ figures/high_heterogeneity_ablation.spec.json (+89 -0)
+     1 +{
+     2 +  "schema_version": "1.2",
+     3 +  "mode": "guided",
+     4 +  "research_goal": {
+     5 +    "question": "How does STAR-AC compare with high-heterogeneity baselines, ablations, and routing
+        variants across Walker2d and DMC Walker Walk?",
+     6 +    "message": "Show the performance and variability of all variants without obscuring close differe
+        nces.",
+     7 +    "metric_direction": "higher"
+     8 +  },
+     9 +  "data": {
+    10 +    "source": "/var/folders/74/h38kw6ln2132p46dynks_l180000gn/T/codex-clipboard-0m4nf5.png",
+    11 +    "normalized_sources": [
+    12 +      "high_heterogeneity_ablation.data.csv"
+    13 +    ],
+    14 +    "intake_report": "high_heterogeneity_ablation.data-audit.json",
+    15 +    "verification_status": "verified",
+    16 +    "verification_method": "user_confirmed",
+    17 +    "structure": "variant_by_metric",
+    18 +    "metrics": [
+    19 +      "Walker2d mix",
+    20 +      "Walker2d worst",
+    21 +      "DMW mix",
+    22 +      "DMW worst"
+    23 +    ],
+    24 +    "uncertainty": {
+    25 +      "kind": "sd",
+    26 +      "source": "The user confirmed that the ± values are standard deviations."
+    27 +    },
+    28 +    "transformations": [
+    29 +      "Split each verified mean ± SD cell into numeric mean and SD values in the plotting script.",
+    30 +      "Preserved the source row and metric order."
+    31 +    ]
+    32 +  },
+    33 +  "chart": {
+    34 +    "type": "four_panel_horizontal_dot_interval",
+    35 +    "selection_status": "confirmed",
+    36 +    "x": "score (mean ± SD)",
+    37 +    "y": "variant",
+    38 +    "series": "variant group",
+    39 +    "panels": [
+    40 +      "Walker2d mix",
+    41 +      "Walker2d worst",
+    42 +      "DMW mix",
+    43 +      "DMW worst"
+    44 +    ]
+    45 +  },
+    46 +  "design": {
+    47 +    "style_status": "confirmed",
+    48 +    "style_source": "questionnaire",
+    49 +    "reference_images": [],
+    50 +    "venue": "AAAI two-column paper",
+    51 +    "column_width": "double",
+    52 +    "chart_style": "publication_minimal",
+    53 +    "palette_request": "low-saturation Morandi palette with STAR-AC emphasized",
+    54 +    "font_request": "publication-safe sans-serif",
+    55 +    "graphic_grammar": "horizontal dot intervals, restrained x-grid, shared method order, marker red
+        undancy for grayscale",
+    56 +    "layout_request": "7-inch double-column landscape, 1 by 4 panels, method labels on the left",
+    57 +    "semantic_roles": {
+    58 +      "STAR-AC": "proposed",
+    59 +      "FedHPD distill. through Static target-cond. teacher": "baseline",
+    60 +      "No target conditioning through No communication skip": "ablation",
+    61 +      "Random routing and Oracle routing": "routing reference"
+    62 +    },
+    63 +    "accessibility": [
+    64 +      "muted colorblind-conscious palette",
+    65 +      "group-specific markers",
+    66 +      "grayscale-distinguishable STAR-AC emphasis"
+    67 +    ]
+    68 +  },
+    69 +  "output": {
+    70 +    "stem": "figures/high_heterogeneity_ablation",
+    71 +    "formats": [
+    72 +      "png",
+    73 +      "pdf"
+    74 +    ],
+    75 +    "dpi": 300
+    76 +  },
+    77 +  "assumptions": [
+    78 +    "All four metrics are scores for which higher values are better.",
+    79 +    "Each panel uses its own horizontal scale because the four score ranges differ.",
+    80 +    "The source table order is scientifically meaningful and is retained."
+    81 +  ],
+    82 +  "open_questions": [],
+    83 +  "acceptance_criteria": [
+    84 +    "All 14 variants and all four verified metrics appear exactly once.",
+    85 +    "Every interval is labeled as mean ± SD.",
+    86 +    "STAR-AC remains identifiable in grayscale.",
+    87 +    "Text and intervals remain legible at a 7-inch double-column width."
+    88 +  ]
+    89 +}
+
+  └ scripts/plot_high_heterogeneity_ablation.py (+121 -0)
+      1 +from __future__ import annotations
+      2 +
+      3 +import csv
+      4 +from pathlib import Path
+      5 +
+      6 +import matplotlib.pyplot as plt
+      7 +from matplotlib.ticker import MaxNLocator
+      8 +
+      9 +
+     10 +ROOT = Path(__file__).resolve().parents[1]
+     11 +DATA = ROOT / "figures/high_heterogeneity_ablation.data.csv"
+     12 +OUTPUT = ROOT / "figures/high_heterogeneity_ablation"
+     13 +METRICS = ("Walker2d mix", "Walker2d worst", "DMW mix", "DMW worst")
+     14 +
+     15 +# Low-saturation Morandi colors; marker shapes preserve the grouping in grayscale.
+     16 +GROUP_STYLE = {
+     17 +    "proposed": {"color": "#52796F", "marker": "D", "zorder": 4},
+     18 +    "baseline": {"color": "#8996A8", "marker": "o", "zorder": 3},
+     19 +    "ablation": {"color": "#B08C87", "marker": "s", "zorder": 2},
+     20 +    "routing": {"color": "#9B9271", "marker": "^", "zorder": 3},
+     21 +}
+     22 +
+     23 +
+     24 +def parse_interval(cell: str) -> tuple[float, float]:
+     25 +    mean, sd = cell.split("±")
+     26 +    return float(mean.strip()), float(sd.strip())
+     27 +
+     28 +
+     29 +def group_for(index: int) -> str:
+     30 +    if index == 0:
+     31 +        return "proposed"
+     32 +    if index <= 4:
+     33 +        return "baseline"
+     34 +    if index <= 11:
+     35 +        return "ablation"
+     36 +    return "routing"
+     37 +
+     38 +
+     39 +def load_data() -> tuple[list[str], dict[str, list[tuple[float, float]]]]:
+     40 +    with DATA.open(newline="", encoding="utf-8") as handle:
+     41 +        rows = list(csv.DictReader(handle))
+     42 +
+     43 +    names = [row["Variant"] for row in rows]
+     44 +    values = {metric: [parse_interval(row[metric]) for row in rows] for metric in METRICS}
+     45 +    assert len(names) == 14 and all(len(values[m]) == 14 for m in METRICS)
+     46 +    return names, values
+     47 +
+     48 +
+     49 +def main() -> None:
+     50 +    names, values = load_data()
+     51 +
+     52 +    plt.rcParams.update(
+     53 +        {
+     54 +            "font.family": "sans-serif",
+     55 +            "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans"],
+     56 +            "font.size": 7,
+     57 +            "axes.titlesize": 7.4,
+     58 +            "axes.labelsize": 7,
+     59 +            "xtick.labelsize": 6.3,
+     60 +            "ytick.labelsize": 6.4,
+     61 +            "pdf.fonttype": 42,
+     62 +            "ps.fonttype": 42,
+     63 +            "axes.linewidth": 0.6,
+     64 +        }
+     65 +    )
+     66 +
+     67 +    fig, axes = plt.subplots(1, 4, figsize=(7.0, 4.15), sharey=True)
+     68 +    y = list(range(len(names)))
+     69 +
+     70 +    for panel, (ax, metric) in enumerate(zip(axes, METRICS, strict=True)):
+     71 +        ax.axhspan(-0.45, 0.45, color="#E8EFEC", zorder=0)
+     72 +
+     73 +        for index, (mean, sd) in enumerate(values[metric]):
+     74 +            style = GROUP_STYLE[group_for(index)]
+     75 +            is_proposed = index == 0
+     76 +            ax.errorbar(
+     77 +                mean,
+     78 +                index,
+     79 +                xerr=sd,
+     80 +                fmt=style["marker"],
+     81 +                color=style["color"],
+     82 +                ecolor=style["color"],
+     83 +                markersize=4.6 if is_proposed else 3.5,
+     84 +                markeredgecolor="#263238" if is_proposed else "white",
+     85 +                markeredgewidth=0.7 if is_proposed else 0.45,
+     86 +                elinewidth=1.35 if is_proposed else 0.85,
+     87 +                capsize=2.1,
+     88 +                capthick=1.0 if is_proposed else 0.75,
+     89 +                zorder=style["zorder"],
+     90 +            )
+     91 +
+     92 +        lows = [mean - sd for mean, sd in values[metric]]
+     93 +        highs = [mean + sd for mean, sd in values[metric]]
+     94 +        span = max(highs) - min(lows)
+     95 +        ax.set_xlim(min(lows) - 0.06 * span, max(highs) + 0.06 * span)
+     96 +        ax.xaxis.set_major_locator(MaxNLocator(nbins=4))
+     97 +        ax.grid(axis="x", color="#D8D8D8", linewidth=0.55, linestyle=(0, (2, 2)))
+     98 +        ax.set_axisbelow(True)
+     99 +        ax.set_title(f"({chr(97 + panel)}) {metric}", fontweight="semibold", pad=5)
+    100 +        ax.tick_params(axis="x", length=2.5, width=0.55, pad=2)
+    101 +        ax.tick_params(axis="y", length=0, pad=4)
+    102 +        ax.spines["top"].set_visible(False)
+    103 +        ax.spines["right"].set_visible(False)
+    104 +        ax.spines["left"].set_visible(panel == 0)
+    105 +        ax.spines["bottom"].set_color("#777777")
+    106 +        ax.spines["left"].set_color("#777777")
+    107 +
+    108 +    axes[0].set_yticks(y, labels=names)
+    109 +    axes[0].invert_yaxis()
+    110 +    axes[0].get_yticklabels()[0].set_fontweight("bold")
+    111 +    axes[0].get_yticklabels()[0].set_color("#355E55")
+    112 +    fig.supxlabel("Score (mean ± SD)", y=0.025, fontsize=7)
+    113 +    fig.subplots_adjust(left=0.285, right=0.995, bottom=0.13, top=0.93, wspace=0.22)
+    114 +
+    115 +    fig.savefig(OUTPUT.with_suffix(".png"), dpi=300, facecolor="white")
+    116 +    fig.savefig(OUTPUT.with_suffix(".pdf"), facecolor="white")
+    117 +    plt.close(fig)
+    118 +
+    119 +
+    120 +if __name__ == "__main__":
+    121 +    main()
+
+• Ran python /Users/sarainoq/.agents/skills/scientific-figure-making/scripts/data_intake.py validate
+  │ figures/high_heterogeneity_ablation.data-audit.json && python /Users/sarainoq/.agents/skills/
+  │ scientific-figure-making/scripts/figure_spec.py validate figures/high_heterogeneity_ablation.spec.json
+  │ … +5 lines
+  └ Figure Spec: VALID
+    - No validation issues.
+    … +21 lines (ctrl + t to view transcript)
+    Matplotlib is building the font cache; this may take a moment.
+    Wrote review preview: figures/high_heterogeneity_ablation.review.png
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• 首轮渲染已通过数据审计、Figure Spec 和导出检查：PNG 为 2100×1245、300 DPI，PDF 结构正常。现在进行原图与灰
+  度预览的人工检查，重点看长方法名、四面板横轴刻度和误差线是否拥挤。
+
+• Viewed Image
+  └ figures/high_heterogeneity_ablation.review.png
+
+• Viewed Image
+  └ figures/high_heterogeneity_ablation.png
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• 视觉检查通过：没有标签碰撞或裁切，四组标记在灰度下可分，STAR-AC 的强调不过度。唯一需要修正的是本机字体不提
+  供 semibold 字重，我会改用稳定的 bold 后重新导出并复检。
+
+• Edited scripts/plot_high_heterogeneity_ablation.py (+1 -1)
+     98          ax.set_axisbelow(True)
+     99 -        ax.set_title(f"({chr(97 + panel)}) {metric}", fontweight="semibold", pad=5)
+     99 +        ax.set_title(f"({chr(97 + panel)}) {metric}", fontweight="bold", pad=5)
+    100          ax.tick_params(axis="x", length=2.5, width=0.55, pad=2)
+
+• Ran MPLCONFIGDIR=/tmp/mplconfig-aaai python scripts/plot_high_heterogeneity_ablation.py && MPLCONFIGDIR=/
+  │ tmp/mplconfig-aaai python /Users/sarainoq/.agents/skills/scientific-figure-making/scripts/
+  │ validate_figure.py --spec figures/high_heterogeneity_ablation.spec.json --report figures/
+  │ … +3 lines
+  └ Figure export QA: PASS (9 pass, 0 warning, 0 error)
+    - PASS file_nonempty [figures/high_heterogeneity_ablation.png]: file size is 126429 bytes
+    … +10 lines (ctrl + t to view transcript)
+    - VISUAL REVIEW REQUIRED: deterministic checks are not visual approval
+    Wrote review preview: figures/high_heterogeneity_ablation.review.png
+
+• Viewed Image
+  └ figures/high_heterogeneity_ablation.review.png
+
+────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+• 已完成 AAAI 双栏论文插图：莫兰迪配色、无衬线字体、四面板点—SD 图。figures/high_heterogeneity_ablation.png
+  · figures/high_heterogeneity_ablation.pdf · scripts/plot_high_heterogeneity_ablation.py。版式符合 AAAI
+  双栏要求，官方格式说明 (https://aaai.org/conference/aaai/aaai-26/submission-instructions/)。
+
+  数据与复现文件：figures/high_heterogeneity_ablation.data.csv · figures/high_heterogeneity_ablation.data-
+  audit.json · figures/high_heterogeneity_ablation.spec.json · figures/high_heterogeneity_ablation.qa.json ·
+  figures/high_heterogeneity_ablation.review.png。
+
+  QA：9 项检查全部通过，完成两轮视觉复检，无裁切或碰撞；运行 MPLCONFIGDIR=/tmp/mplconfig-aaai python
+  scripts/plot_high_heterogeneity_ablation.py 可复现。

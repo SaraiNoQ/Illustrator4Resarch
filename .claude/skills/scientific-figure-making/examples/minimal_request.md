@@ -1,15 +1,17 @@
 # Minimal style-first request
 
-Version 0.7 does not require a complete prompt, but it makes unresolved style
-choices visible instead of silently applying generic defaults.
+Version 0.9 accepts structured files, TeX/Markdown tables, and table screenshots,
+then checks compact export bounds and visual composition.
+It normalizes and audits the data internally while keeping unresolved style
+choices first in the user-facing response.
 
 ```text
 /scientific-figure-making
 
-results.csv 是论文主实验结果，Ours 是本文方法。
+results.tex 是论文主实验结果，Ours 是本文方法。
 我还没有决定期刊风格、图类型、配色、字体和版式。
-请先读取数据，给出 Style Brief，并针对每个缺失的样式维度推荐方案供我确认。
-样式问题之后再列出会影响科学解释的问题；确认前不要正式绘图。
+请先解析并核对数据，给出 Style Brief，并针对每个缺失的样式维度推荐方案供我确认。
+样式问题之后再展示数据审计和科学问题；三道门禁确认前不要正式绘图。
 ```
 
 If the user wants to delegate everything:
@@ -37,8 +39,10 @@ Expected incomplete-request behavior:
 1. Inspect a designated reference before asking style questions.
 2. Create a Style Brief.
 3. Ask separately about every unresolved style dimension, with recommendations.
-4. Put up to three scientific questions after the style section.
-5. Wait until style, chart, and scientific semantics are confirmed.
-6. Create a schema 1.1 Figure Spec and runnable script.
-7. Render PNG/PDF, run deterministic QA, and inspect original/grayscale output.
-8. Revise observed defects before delivery.
+4. Report input roles, extraction method, normalized preview, and data status in
+   scientific interpretation.
+5. Put up to three data/scientific questions after the style section.
+6. Wait until data, style/chart, and scientific semantics are confirmed.
+7. Create a schema 1.2 Figure Spec and runnable script that reads normalized CSV.
+8. Render PNG/PDF, run deterministic QA, and inspect original/grayscale output.
+9. Revise observed defects before delivery.

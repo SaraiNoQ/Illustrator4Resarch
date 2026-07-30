@@ -1,8 +1,8 @@
-# scientific-figure-making v0.7
+# scientific-figure-making v0.8
 
-A global-installable Agent Skill that turns raw experiment data, visual references, and incomplete requests into intentionally styled, scientifically honest, visually inspected, publication-ready Python/Matplotlib figures.
+A global-installable Agent Skill that turns pasted values, structured data files, TeX/Markdown tables, table screenshots, visual references, and incomplete requests into intentionally styled, scientifically honest, visually inspected, publication-ready Python/Matplotlib figures.
 
-Version 0.7 uses a style-first confirmation gate. If style is incomplete, it first inspects any designated reference image, creates a Style Brief, and asks separately about unresolved venue, chart grammar, palette, typography, and layout. Scientific questions such as the meaning of `error` follow in the same response. Formal rendering starts only after both style and scientific semantics are confirmed or explicitly delegated.
+Version 0.9 keeps the provenance-preserving Data Intake layer and adds composition-aware export QA. It normalizes CSV/TSV, JSON, Markdown, simple TeX, and reviewable table transcriptions into CSV plus an audit report, then exports compact PNG/PDF bounds and flags excessive outer whitespace. The first user-facing block remains the Style Brief; formal rendering still waits for data fidelity, style/chart, and scientific semantics.
 
 This skill separates four concepts:
 
@@ -14,8 +14,9 @@ This skill separates four concepts:
 These engines sit inside a confirmed guided workflow:
 
 ```text
-inputs/reference -> Style Brief -> style questions -> scientific questions
-                 -> confirmed Figure Brief -> Figure Spec 1.1
+input inventory -> normalize + audit internally
+                -> Style Brief -> style questions -> data/scientific questions
+                -> three gates confirmed -> Figure Spec 1.2
                  -> design engines -> script/render -> deterministic + visual QA
                  -> targeted revision -> reproducible handoff
 ```
@@ -120,8 +121,17 @@ The preview prints palette candidates, the selected chart-style preset, and desi
 
 ## Guided workflow utilities
 
-Create and validate a schema 1.1 Figure Spec. The initial template is
-intentionally invalid until style and chart confirmation are recorded:
+Normalize deterministic tabular input:
+
+```bash
+python scripts/data_intake.py extract results.tex \
+  --normalized figures/main.data.csv \
+  --report figures/main.data-audit.json
+python scripts/data_intake.py validate figures/main.data-audit.json
+```
+
+Create and validate a schema 1.2 Figure Spec. The initial template is
+intentionally invalid until data, style, and chart confirmation are recorded:
 
 ```bash
 python scripts/figure_spec.py init --output figures/main.spec.json
@@ -141,17 +151,20 @@ python scripts/render_preview.py \
   --grayscale
 ```
 
-Passing deterministic QA is not visual approval. The agent must open/read the review image and inspect correctness, collisions, legibility, hierarchy, and grayscale differentiation.
+Passing deterministic QA is not visual approval. The agent must open/read the review image and inspect correctness, collisions, legibility, hierarchy, grouping, content density, outer margins, and grayscale differentiation.
 
 ## Key files
 
 - `SKILL.md`: agent-facing instructions.
+- `references/data-intake.md`: format routing, normalization, provenance, and
+  data-verification gate.
 - `references/style-intake.md`: reference-first style audit and question order.
 - `references/requirement-workflow.md`: style/science gates and question policy.
 - `references/chart-selection.md`: chart choice driven by the scientific message.
 - `references/figure-spec.md`: reproducible Figure Spec contract.
 - `references/visual-qa.md`: render, inspect, revise workflow.
 - `scripts/figure_design.py`: heuristic palette, chart-style, and table-style engine.
+- `scripts/data_intake.py`: standard-library data normalization and audit validator.
 - `scripts/figure_fonts.py`: publication-safe font stack selector for standalone global scripts.
 - `scripts/figure_spec.py`: standard-library Figure Spec validator.
 - `scripts/figure_toolkit.py`: plotting helpers and legacy compatibility.

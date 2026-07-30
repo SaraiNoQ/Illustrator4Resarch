@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0",
+  "sources": [
+    {
+      "path": "guided_workflow_demo.source.tex",
+      "format": "latex",
+      "roles": [
+        "primary_data"
+      ],
+      "content_kind": "table",
+      "extraction_method": "stdlib_parser",
+      "sha256": "24b05bc655edea4bb01ff9d1d82e611042bc2be7d95a1e4527b7495dc00fe7bb"
+    }
+  ],
+  "normalized_sources": [
+    {
+      "path": "guided_workflow_demo.data.csv",
+      "sha256": "b13588d863aeb3f53ee28501cc2a750153ee86ec02d468bd82ceb2e21156295f",
+      "rows": 4,
+      "columns": 5
+    }
+  ],
+  "verification_status": "verified",
+  "verification_method": "deterministic_parse",
+  "warnings": []
+}

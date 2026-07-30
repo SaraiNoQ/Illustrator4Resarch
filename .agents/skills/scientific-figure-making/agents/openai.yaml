@@ -1,18 +1,19 @@
 interface:
   display_name: "Scientific Figure Making"
-  short_description: "Lead with style confirmation, then resolve scientific meaning, render, and visually validate publication-ready Matplotlib figures."
+  short_description: "Normalize and verify research data, lead with style confirmation, then render and visually validate publication-ready Matplotlib figures."
   brand_color: "#0F4D92"
-  default_prompt: "Use this skill to turn my experiment data, reference image, or existing plot into a publication-ready figure. Start with a reference-first Style Brief; ask every unresolved venue, chart/grammar, palette, typography, and layout question before scientific clarifications in the same batch. Do not formally render until style, chart, and scientific semantics are confirmed or explicitly delegated. Then create Figure Spec 1.1, render PNG/PDF, inspect the original/grayscale preview, and revise defects."
+  default_prompt: "Use this skill to turn my pasted data, CSV/JSON/TeX table, table screenshot, reference image, or existing plot into a publication-ready figure. Normalize primary data and record provenance internally, then lead the user-facing response with a reference-first Style Brief. Ask unresolved style questions before data and scientific clarifications. Do not formally render until data fidelity, style/chart, and scientific semantics are verified or explicitly delegated. Then create Figure Spec 1.2, render tightly cropped PNG/PDF, inspect the original/grayscale preview, resolve outer-whitespace warnings, and revise composition, hierarchy, legibility, and accessibility defects."
 
 policy:
   allow_implicit_invocation: true
 
 metadata:
-  version: "0.7.0"
+  version: "0.9.0"
   install_scope: "repo,user,admin"
   standalone: true
   design_layers:
     - style_intake
+    - data_intake
     - guided_workflow
     - palette
     - chart_style

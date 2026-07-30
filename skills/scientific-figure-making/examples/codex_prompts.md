@@ -4,8 +4,8 @@ Use these prompts when calling this repository from Codex.
 
 ## 1. Guided main-results request
 
-This is the preferred v0.7 style-intake test because it says the visual design
-is undecided rather than delegating it.
+This is the preferred v0.9 intake test because it supplies structured data while
+leaving visual design undecided.
 
 ```text
 Read AGENTS.md and use skills/scientific-figure-making/SKILL.md.
@@ -26,9 +26,10 @@ Expected behavior:
 - create a Style Brief before scientific interpretation;
 - ask venue, chart/grammar, palette, typography, and layout separately;
 - recommend an answer for each style question;
-- wait for style and scientific confirmation;
-- create a schema 1.1 Figure Spec and render only after confirmation;
-- run deterministic and visual QA.
+- normalize and audit the input before rendering;
+- wait for data, style, and scientific confirmation;
+- create a schema 1.2 Figure Spec and render only after confirmation;
+- export compact outer bounds and run deterministic plus visual QA.
 
 ## 2. Preview palettes only
 
@@ -65,9 +66,10 @@ is explicit delegation, do not ask redundant style questions.
 Read AGENTS.md and use skills/scientific-figure-making/SKILL.md.
 
 Inspect figures/current.png and scripts/plot_current.py. The legend hides two
-curves and the x tick labels overlap. Improve it to submission quality without
-changing any values. Preserve the current blue for Ours. Inspect the original
-image before editing, then render and compare the revision.
+curves, the x tick labels overlap, and the left outer margin wastes space.
+Improve it to submission quality without changing any values. Preserve the
+current blue for Ours. Inspect the original image before editing, then render,
+check `outer_whitespace`, and compare the revision.
 ```
 
 ## 5. Designated visual reference
@@ -79,4 +81,16 @@ Use results.csv for the main paper figure. references/target.png is the visual
 reference: preserve its color hierarchy, sans-serif direction, open axes, and
 top legend. Inspect it before asking questions and ask only about unresolved
 style or scientific details.
+```
+
+## 6. Table screenshot as data
+
+```text
+Read AGENTS.md and use skills/scientific-figure-making/SKILL.md.
+
+attached/results-table.png is a screenshot of my experiment table and is the
+primary data source. Inspect it at original resolution, transcribe it into a
+normalized CSV, and show the extracted table after the style questions. Do not
+render until I confirm the transcription. If the attachment is a chart rather
+than a table, ask me for the underlying values instead of digitizing it.
 ```

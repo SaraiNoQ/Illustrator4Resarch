@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
-"""End-to-end v0.7 style-confirmed guided-workflow demo figure."""
+"""End-to-end v0.9 verified, style-confirmed, compact-export demo figure."""
 from __future__ import annotations
 
+import csv
 import sys
 from pathlib import Path
 
@@ -20,6 +21,19 @@ from figure_toolkit import finalize_figure, make_grouped_bar
 
 
 CONFIRMED_CHART_STYLE = "publication_minimal"
+DATA_PATH = Path(__file__).with_name("guided_workflow_demo.data.csv")
+
+
+def load_verified_data() -> tuple[list[str], list[str], np.ndarray]:
+    with DATA_PATH.open(encoding="utf-8", newline="") as handle:
+        rows = list(csv.DictReader(handle))
+    labels = ["Fed-SOLO", "FedAvg-LoRA", "Local LoRA", "FedReFT"]
+    categories = [row["Dataset"] for row in rows]
+    values = np.array(
+        [[float(row[label]) for row in rows] for label in labels],
+        dtype=float,
+    )
+    return categories, labels, values
 
 
 def main() -> None:
@@ -29,16 +43,7 @@ def main() -> None:
         "colorblind-safe palette, clean sans-serif typography, grouped bars, "
         "and strong but honest proposed-method emphasis."
     )
-    categories = ["GSM8K", "MATH", "HotpotQA", "WebShop"]
-    labels = ["Fed-SOLO", "FedAvg-LoRA", "Local LoRA", "FedReFT"]
-    values = np.array(
-        [
-            [72.4, 41.8, 68.2, 58.0],
-            [68.1, 38.7, 64.5, 54.2],
-            [63.0, 34.9, 61.3, 49.8],
-            [66.2, 37.1, 63.8, 52.5],
-        ]
-    )
+    categories, labels, values = load_verified_data()
 
     design = auto_figure_design(
         request,

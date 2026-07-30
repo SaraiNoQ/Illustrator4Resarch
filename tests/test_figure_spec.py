@@ -23,9 +23,14 @@ def valid_spec():
     }
     spec["data"] = {
         "source": "results.csv",
+        "normalized_sources": ["figures/results.data.csv"],
+        "intake_report": "figures/results.data-audit.json",
+        "verification_status": "verified",
+        "verification_method": "deterministic_parse",
         "structure": "method_by_dataset",
         "metrics": ["Accuracy (%)"],
         "uncertainty": {"kind": "none", "source": None},
+        "transformations": [],
     }
     spec["chart"] = {
         "type": "grouped_bar",
@@ -109,6 +114,32 @@ def test_pending_style_blocks_formal_rendering():
     )
 
 
+def test_pending_data_blocks_formal_rendering():
+    spec = valid_spec()
+    spec["data"]["verification_status"] = "pending"
+
+    result = validate_spec(spec)
+
+    assert result.valid is False
+    assert any(
+        issue.path == "data.verification_status" and "pending" in issue.message
+        for issue in result.errors
+    )
+
+
+def test_verified_data_requires_normalized_sources_and_audit():
+    spec = valid_spec()
+    spec["data"]["normalized_sources"] = []
+    spec["data"]["intake_report"] = ""
+
+    result = validate_spec(spec)
+
+    assert result.valid is False
+    error_paths = {issue.path for issue in result.errors}
+    assert "data.normalized_sources" in error_paths
+    assert "data.intake_report" in error_paths
+
+
 def test_recommended_chart_blocks_formal_rendering():
     spec = valid_spec()
     spec["chart"]["selection_status"] = "recommended"
@@ -172,6 +203,14 @@ def test_legacy_schema_1_0_remains_valid_with_warning():
     ):
         spec["design"].pop(key, None)
     spec["chart"].pop("selection_status", None)
+    for key in (
+        "normalized_sources",
+        "intake_report",
+        "verification_status",
+        "verification_method",
+        "transformations",
+    ):
+        spec["data"].pop(key, None)
 
     result = validate_spec(spec)
 
@@ -180,6 +219,45 @@ def test_legacy_schema_1_0_remains_valid_with_warning():
         issue.path == "schema_version" and "legacy schema 1.0" in issue.message
         for issue in result.warnings
     )
+
+
+def test_legacy_schema_1_1_keeps_style_gate_and_warns_about_data_record():
+    spec = valid_spec()
+    spec["schema_version"] = "1.1"
+    for key in (
+        "normalized_sources",
+        "intake_report",
+        "verification_status",
+        "verification_method",
+        "transformations",
+    ):
+        spec["data"].pop(key, None)
+
+    result = validate_spec(spec)
+
+    assert result.valid is True
+    assert any(
+        issue.path == "schema_version" and "data-verification" in issue.message
+        for issue in result.warnings
+    )
+
+    spec["design"]["style_status"] = "pending"
+    result = validate_spec(spec)
+    assert result.valid is False
+    assert any(issue.path == "design.style_status" for issue in result.errors)
+
+
+def test_schema_1_2_checks_data_artifacts_when_base_dir_is_available(tmp_path):
+    spec = valid_spec()
+    spec["data"]["normalized_sources"] = ["missing.data.csv"]
+    spec["data"]["intake_report"] = "missing.data-audit.json"
+
+    result = validate_spec(spec, base_dir=tmp_path)
+
+    assert result.valid is False
+    error_paths = {issue.path for issue in result.errors}
+    assert "data.normalized_sources[0]" in error_paths
+    assert "data.intake_report" in error_paths
 
 
 def test_non_string_schema_version_reports_error_instead_of_crashing():

@@ -4,7 +4,8 @@ Use this workflow when a user has not supplied a complete plotting
 specification. The purpose is to reduce user effort without silently choosing
 the visual direction or guessing scientific meaning.
 
-Read `style-intake.md` before applying this policy to a guided request.
+Read `data-intake.md` for nontrivial input files and `style-intake.md` before
+applying this policy to a guided request.
 
 ## Information classes
 
@@ -23,6 +24,21 @@ Recommend an answer for every missing dimension. “I have not decided” is a
 request for guided choices, not permission to use a hidden default. “You decide”
 or “use all recommendations” is explicit delegation and closes the relevant
 style gaps.
+
+### Data-fidelity critical
+
+These items decide whether plotted cells faithfully match their sources:
+
+- source roles and which source is authoritative;
+- deterministic parse versus visual/manual/runtime transcription;
+- irregular rows, blank or duplicate headers, complex TeX, and unreadable cells;
+- source conflicts and changes detected by hashes;
+- normalized CSV paths and recorded transformations.
+
+Clean deterministic text parsing may close this gate automatically. Screenshot,
+manual, complex-TeX, or ambiguous runtime extraction requires review of the
+normalized table and explicit user confirmation. Confirming visual style does
+not confirm transcribed data.
 
 ### Scientifically critical
 
@@ -49,6 +65,7 @@ closed:
 - PNG and PDF when no format is requested;
 - 300 DPI or the confirmed venue requirement;
 - deterministic output paths;
+- content-aware tight export bounds with small non-clipping padding;
 - safe installed-font fallback when the confirmed typeface is unavailable;
 - accessibility redundancy that preserves the confirmed visual direction.
 
@@ -57,7 +74,7 @@ closed:
 Do not block on decoration outside the requested design contract:
 
 - exact cap width or marker size after the graphic grammar is confirmed;
-- sub-point whitespace adjustments;
+- sub-point internal spacing adjustments after outer bounds are compact;
 - tiny annotation offsets discovered during visual QA.
 
 ## Mode selection
@@ -83,8 +100,11 @@ Scientific questions
 ```
 
 The style section may contain up to five numbered questions, one for each
-unresolved style dimension. Follow it with at most three scientific questions.
-Keep them in one response so the user can answer in one batch.
+unresolved style dimension. In `Scientific interpretation`, report source
+roles, extraction method, normalized table shape/preview, data-verification
+status, and parsing warnings before the scientific meaning. Follow it with at
+most three data/scientific questions. Keep them in one response so the user can
+answer in one batch.
 
 Every question must:
 
@@ -94,27 +114,29 @@ Every question must:
 4. avoid repeating information recoverable from context.
 
 Do not ask the user to invent a chart from scratch. Recommend the scientifically
-appropriate chart and ask for confirmation. Do not place uncertainty or unit
-questions before unresolved style questions.
+appropriate chart and ask for confirmation. Do not place transcription,
+source-authority, uncertainty, or unit questions before unresolved style
+questions.
 
 ## Confirmation state
 
-Use two independent gates:
+Use three independent gates:
 
+- `data_status=pending` until normalized data and its provenance are verified;
 - `style_status=pending` until all five style dimensions and the chart are
   confirmed, reference-derived, or delegated;
 - scientific status remains blocked while any critical ambiguity is unresolved.
 
-If the user answers only one section, preserve the other section's unresolved
-questions. Formal code generation and final rendering begin only when both gates
-are closed.
+If the user answers only one section, preserve the other unresolved questions.
+Formal code generation and final rendering begin only when all three gates are
+closed.
 
 ## Proceeding without a reply
 
 Do not silently convert unanswered style questions into defaults. A Style Brief,
 swatch sheet, or clearly labelled low-fidelity preview may be useful, but it is
-not a final figure. Do not render scientifically ambiguous error bars or
-transformations.
+not a final figure. Do not render unconfirmed transcription, scientifically
+ambiguous error bars, or unexplained transformations.
 
 Explicit delegation is a reply: “按推荐”, “你来决定”, or equivalent authorizes
 the stated recommendations and should not trigger another style questionnaire.
@@ -131,5 +153,7 @@ When an existing script or image is provided:
 6. Preserve effective choices and change the smallest useful parameter set.
 7. Re-render and compare against the original.
 
-If only an image is available, do not reconstruct exact source values from pixel
-positions. Ask for the data or script when numeric fidelity matters.
+If only a chart image is available, do not reconstruct exact source values from
+pixel positions. Ask for the data or script when numeric fidelity matters. A
+table screenshot may be transcribed, but its normalized table remains pending
+until the user confirms it.

@@ -39,6 +39,14 @@ def _write_blank_figure(path: Path) -> None:
     plt.close(fig)
 
 
+def _write_wide_margin_figure(path: Path) -> None:
+    fig = plt.figure(figsize=(4.0, 3.0), facecolor="white")
+    ax = fig.add_axes((0.38, 0.2, 0.52, 0.65))
+    ax.plot([0, 1, 2], [0.2, 0.8, 0.5], marker="o", color="#0072B2")
+    fig.savefig(path, dpi=300, facecolor="white")
+    plt.close(fig)
+
+
 def test_png_metadata_reads_dimensions_and_dpi(tmp_path):
     path = tmp_path / "figure.png"
     _write_line_figure(path, dpi=300)
@@ -62,6 +70,10 @@ def test_visible_png_passes_deterministic_checks(tmp_path):
         check.name == "non_blank_content" and check.status == "pass"
         for check in checks
     )
+    assert any(
+        check.name == "outer_whitespace" and check.status == "pass"
+        for check in checks
+    )
 
 
 def test_blank_png_is_rejected(tmp_path):
@@ -74,6 +86,18 @@ def test_blank_png_is_rejected(tmp_path):
         check.name == "non_blank_content" and check.status == "error"
         for check in checks
     )
+
+
+def test_excess_outer_whitespace_is_reported(tmp_path):
+    path = tmp_path / "wide-margin.png"
+    _write_wide_margin_figure(path)
+
+    checks = validate_paths([path], expected_dpi=300)
+
+    whitespace = next(check for check in checks if check.name == "outer_whitespace")
+    assert whitespace.status == "warning"
+    assert "left=" in whitespace.message
+    assert "bbox_inches='tight'" in whitespace.message
 
 
 def test_pdf_signature_is_checked(tmp_path):

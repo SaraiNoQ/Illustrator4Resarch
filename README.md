@@ -30,17 +30,18 @@
 
 `Illustrator4Resarch` is a reusable agent skill for planning, creating, inspecting, and refining Python/Matplotlib figures for papers, theses, reports, and research slides.
 
-Version 0.7 adds style-first orchestration. Give it raw results, a manuscript claim, an existing script/image, a visual reference, or a broad request such as “make the main paper figure.” When visual intent is incomplete, the skill first builds a Style Brief, inspects any designated reference, asks separately about unresolved venue, chart grammar, palette, typography, and layout, then asks scientific questions in the same batch. It renders only after both contracts are confirmed or delegated.
+Version 0.9 adds composition-aware export QA to the provenance-preserving, style-first workflow. Give it pasted results, CSV/TSV/JSON, TeX or Markdown tables, a table screenshot, an existing script/image, or a visual reference. The skill normalizes primary data, records source hashes, exports content-aware tight bounds, and flags excessive outer whitespace. It renders only after data fidelity, style/chart, and scientific semantics are all verified.
 
 | Layer | Responsibility | Examples |
 | --- | --- | --- |
-| Style-first workflow | Turns incomplete inputs into a confirmed visual and scientific contract | Style Brief, reference inspection, confirmation gates, Figure Spec 1.1 |
+| Data intake | Converts heterogeneous sources into verified, reviewable plotting data | normalized CSV, source hashes, audit report, screenshot confirmation |
+| Style-first workflow | Turns incomplete inputs into a confirmed visual and scientific contract | Style Brief, reference inspection, three confirmation gates, Figure Spec 1.2 |
 | Palette engine | Selects colorblind-safe palettes and semantic roles | proposed method, baseline, ablation, neutral, highlight |
 | Chart-style engine | Selects plotting form and publication aesthetics | Nature-like, IEEE Transactions, NeurIPS, seaborn-like, thesis clean |
 | Table-style engine | Selects paper, appendix, dashboard, or print-safe table grammar | three-line table, compact table, zebra table |
 | Font engine | Selects publication-safe font stacks from a controlled registry | Arial/Helvetica for formal styles; Trebuchet/Verdana-like sans fonts for cute hand-drawn styles |
 | Plotting helpers | Provides reusable Matplotlib wrappers | grouped bar, trend curve, heatmap, scatter-style figures |
-| Export QA | Validates and visually reviews actual outputs | DPI, signatures, blank renders, grayscale preview, collision review |
+| Export QA | Validates and visually reviews actual outputs | DPI, signatures, blank renders, compact outer margins, grayscale and composition review |
 
 The important design choice is that workflow, chart form, palette, chart style, table style, font, and QA are separate responsibilities. A good palette cannot rescue the wrong chart, and a successful Python process does not prove that labels are readable in the exported image.
 
@@ -214,9 +215,21 @@ Local LoRA: 63.0, 34.9, 61.3, 49.8
 FedReFT: 66.2, 37.1, 63.8, 52.5
 ```
 
-The first response should ask the five unresolved style dimensions before any scientific questions and should not create formal artifacts yet. After confirmation, the agent returns a runnable script, PNG, PDF, schema 1.1 Figure Spec, QA report, and original/grayscale review preview.
+The first response should ask the five unresolved style dimensions before any data or scientific questions and should not create formal plotting artifacts yet. After all three gates close, the agent returns normalized data and its audit, a runnable script, PNG, PDF, schema 1.2 Figure Spec, QA report, and original/grayscale review preview.
 
 If a request contains scientifically ambiguous uncertainty such as `78.4 ± 0.7`, the `±` question appears after the style section. Neither unresolved style nor unresolved uncertainty may silently pass into formal rendering.
+
+For deterministic CSV/TSV, JSON, Markdown, or simple TeX intake:
+
+```bash
+python skills/scientific-figure-making/scripts/data_intake.py extract results.tex \
+  --normalized figures/main.data.csv \
+  --report figures/main.data-audit.json
+python skills/scientific-figure-making/scripts/data_intake.py validate \
+  figures/main.data-audit.json
+```
+
+Table screenshots are transcribed into the same CSV/audit contract but remain pending until the user confirms the visible cells. Chart screenshots are never treated as exact numeric sources.
 
 ## Agent Workflows
 
@@ -245,7 +258,7 @@ After global installation:
 $scientific-figure-making
 Use results.csv to create the main paper figure.
 Ours is the proposed method. Start with a Style Brief and ask about every unresolved visual dimension before scientific clarifications.
-After confirmation, create Figure Spec 1.1, render PNG/PDF, run deterministic QA,
+After confirmation, create Figure Spec 1.2, render PNG/PDF, run deterministic QA,
 inspect the original/grayscale preview, and revise visible defects.
 ```
 
@@ -374,6 +387,7 @@ Illustrator4Resarch/
 │   ├── references/
 │   │   ├── api-usage.md
 │   │   ├── chart-selection.md
+│   │   ├── data-intake.md
 │   │   ├── figure-spec.md
 │   │   ├── font-workflow.md
 │   │   ├── global-installation.md
@@ -384,6 +398,7 @@ Illustrator4Resarch/
 │   │   ├── table-workflow.md
 │   │   └── visual-qa.md
 │   ├── scripts/
+│   │   ├── data_intake.py
 │   │   ├── figure_design.py
 │   │   ├── figure_fonts.py
 │   │   ├── figure_spec.py

@@ -4,14 +4,15 @@ For substantive figure-generation tasks, store the confirmed plan as JSON next
 to the output. The spec is a reproducibility and validation artifact; it is not
 a form the user must fill out.
 
-New figures use schema 1.1. Schema 1.0 remains readable for compatibility, but
-validation warns that it lacks an explicit style-confirmation record.
+New figures use schema 1.2. Schema 1.0 and 1.1 remain readable for compatibility.
+Validation warns that 1.0 lacks style confirmation and that both legacy versions
+lack an explicit data-verification record.
 
-## Schema 1.1
+## Schema 1.2
 
 ```json
 {
-  "schema_version": "1.1",
+  "schema_version": "1.2",
   "mode": "guided",
   "research_goal": {
     "question": "Which method performs best across datasets?",
@@ -19,13 +20,22 @@ validation warns that it lacks an explicit style-confirmation record.
     "metric_direction": "higher"
   },
   "data": {
-    "source": "results.csv",
+    "source": "results.tex",
+    "normalized_sources": [
+      "main_comparison.data.csv"
+    ],
+    "intake_report": "main_comparison.data-audit.json",
+    "verification_status": "verified",
+    "verification_method": "deterministic_parse",
     "structure": "method_by_dataset",
     "metrics": ["Accuracy (%)"],
     "uncertainty": {
       "kind": "sd",
       "source": "error column confirmed by the user"
-    }
+    },
+    "transformations": [
+      "Converted the verified wide source table to long records in the plotting script."
+    ]
   },
   "chart": {
     "type": "grouped_dot_interval",
@@ -65,12 +75,13 @@ validation warns that it lacks an explicit style-confirmation record.
   "open_questions": [],
   "acceptance_criteria": [
     "All values are represented exactly once.",
-    "Labels remain legible at confirmed double-column width."
+    "Labels remain legible at confirmed double-column width.",
+    "Outer export margins are compact without clipping any artist."
   ]
 }
 ```
 
-## Confirmation fields
+## Data and confirmation fields
 
 - `chart.selection_status` is `recommended` or `confirmed`.
 - `design.style_status` is `pending` or `confirmed`.
@@ -80,11 +91,21 @@ validation warns that it lacks an explicit style-confirmation record.
   non-empty when `style_source` is `reference`.
 - `font_request`, `graphic_grammar`, and `layout_request` record the resolved
   intent, not only the renderer's implementation details.
+- `data.normalized_sources` lists the verified CSV tables used by the plotting
+  script. Paths are resolved relative to the Figure Spec during validation.
+- `data.intake_report` points to the validated source/normalized provenance
+  report.
+- `data.verification_status` is `pending` or `verified`.
+- `data.verification_method` is `deterministic_parse`, `user_confirmed`, or
+  `mixed`.
+- `data.transformations` records wide/long reshaping, filtering, sorting,
+  aggregation, normalization, or unit conversion.
 
-A schema 1.1 spec is invalid while style is pending or chart selection is only
-recommended. Generate the formal spec after the user confirms or delegates the
-choices; a pre-confirmation draft may be saved separately but must not validate
-as render-ready.
+A schema 1.2 spec is invalid while data or style is pending, chart selection is
+only recommended, normalized files or the intake report are missing/invalid, or
+a critical scientific question remains. Generate the formal spec after all
+three gates close; a pre-confirmation draft may be saved separately but must not
+validate as render-ready.
 
 ## General rules
 
@@ -93,26 +114,31 @@ as render-ready.
 - Represent unresolved questions as objects with `question`, `reason`, and
   `severity`. `severity` is `critical` or `preference`.
 - A critical scientific question blocks valid rendering.
-- A preference question cannot override a pending schema 1.1 style gate.
-- `data.source` may name a file or use `embedded`; do not duplicate large data
-  arrays when a source file exists.
+- A preference question cannot override a pending schema 1.2 data or style gate.
+- `data.source` identifies the original authoritative input or uses `embedded`;
+  `normalized_sources` identifies what the plotting script actually reads.
+- Validate `data.intake_report` before the Figure Spec. Do not duplicate large
+  data arrays in the spec.
 - `chart.x`, `chart.y`, and `chart.series` describe semantic mappings.
 - `output.stem` has no extension. Formats are added during export.
 - Include actual output DPI.
 - Record material defaults and delegated decisions in `assumptions`.
 - Acceptance criteria should be checkable in the final image or code.
+- Record intentional large outer margins in `design.layout_request`; otherwise
+  unresolved `outer_whitespace` warnings should trigger a tighter re-export.
 
 ## Commands
 
-Create a schema 1.1 template:
+Create a schema 1.2 template:
 
 ```bash
 python scripts/figure_spec.py init --output figures/main.spec.json
 ```
 
-Validate before formal rendering:
+Validate data provenance and then the spec before formal rendering:
 
 ```bash
+python scripts/data_intake.py validate figures/main.data-audit.json
 python scripts/figure_spec.py validate figures/main.spec.json
 ```
 

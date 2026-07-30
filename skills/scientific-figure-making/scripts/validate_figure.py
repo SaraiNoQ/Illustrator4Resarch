@@ -24,6 +24,7 @@ from figure_spec import load_spec, validate_spec
 
 PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
 PDF_SIGNATURE = b"%PDF-"
+OUTER_WHITESPACE_WARNING_RATIO = 0.08
 
 
 @dataclass(frozen=True)
@@ -100,6 +101,26 @@ def _as_rgb(image: np.ndarray) -> np.ndarray:
     return np.clip(rgb, 0.0, 1.0)
 
 
+def _content_margins(content: np.ndarray) -> dict[str, float] | None:
+    """Measure blank space around visible content, ignoring thin border artifacts."""
+    height, width = content.shape
+    trim = max(1, int(round(min(height, width) * 0.002)))
+    if height <= trim * 2 or width <= trim * 2:
+        return None
+    interior = content[trim : height - trim, trim : width - trim]
+    ys, xs = np.nonzero(interior)
+    if not len(xs):
+        return None
+    xs = xs + trim
+    ys = ys + trim
+    return {
+        "left": float(xs.min() / width),
+        "right": float((width - 1 - xs.max()) / width),
+        "top": float(ys.min() / height),
+        "bottom": float((height - 1 - ys.max()) / height),
+    }
+
+
 def _raster_statistics(path: Path) -> dict[str, Any]:
     rgb = _as_rgb(mpimg.imread(path))
     luminance = (
@@ -132,6 +153,7 @@ def _raster_statistics(path: Path) -> dict[str, Any]:
         ),
         "content_fraction": float(content.mean()),
         "edge_content_fraction": edge_fractions,
+        "content_margins": _content_margins(content),
     }
 
 
@@ -275,6 +297,39 @@ def validate_png(path: Path, expected_dpi: float | None = None) -> list[Check]:
                 "no broad multi-edge crop contact detected",
             )
         )
+
+    margins = stats["content_margins"]
+    if margins is not None:
+        oversized = {
+            edge: fraction
+            for edge, fraction in margins.items()
+            if fraction > OUTER_WHITESPACE_WARNING_RATIO
+        }
+        formatted = ", ".join(
+            f"{edge}={fraction:.1%}" for edge, fraction in margins.items()
+        )
+        if oversized:
+            checks.append(
+                _check(
+                    "warning",
+                    "outer_whitespace",
+                    path,
+                    (
+                        f"excess blank outer margin detected ({formatted}); "
+                        "use content-aware layout and save with "
+                        "bbox_inches='tight' plus a small pad"
+                    ),
+                )
+            )
+        else:
+            checks.append(
+                _check(
+                    "pass",
+                    "outer_whitespace",
+                    path,
+                    f"outer margins are compact ({formatted})",
+                )
+            )
     return checks
 
 
@@ -356,14 +411,20 @@ def build_report(
             "semantic hierarchy and non-misleading scale",
             "uncertainty representation",
             "grayscale and color-independent differentiation",
-            "multi-panel alignment and whitespace",
+            "multi-panel alignment, content density, and outer whitespace",
         ],
     }
 
 
 def _print_report(report: dict[str, Any]) -> None:
-    status = "PASS" if report["passed"] else "FAIL"
     summary = report["summary"]
+    status = (
+        "FAIL"
+        if summary["error"]
+        else "PASS WITH WARNINGS"
+        if summary["warning"]
+        else "PASS"
+    )
     print(
         f"Figure export QA: {status} "
         f"({summary['pass']} pass, {summary['warning']} warning, "
@@ -397,7 +458,10 @@ def main(argv: list[str] | None = None) -> int:
     try:
         if args.spec:
             spec = load_spec(args.spec)
-            spec_result = validate_spec(spec)
+            spec_result = validate_spec(
+                spec,
+                base_dir=Path(args.spec).parent,
+            )
             for issue in spec_result.errors:
                 checks.append(
                     Check("error", "figure_spec", str(args.spec), f"{issue.path}: {issue.message}")

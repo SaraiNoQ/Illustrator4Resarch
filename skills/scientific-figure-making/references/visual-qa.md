@@ -29,8 +29,9 @@ python scripts/validate_figure.py \
 ```
 
 The validator checks file presence, signatures, dimensions, encoded raster DPI,
-blank or near-uniform output, tonal contrast, and obvious crop-boundary risks.
-These checks catch export failures but cannot judge scientific communication.
+blank or near-uniform output, tonal contrast, crop-boundary risks, and excessive
+blank outer margins. These checks catch export failures and obvious canvas
+waste but cannot judge scientific communication.
 
 Generate a review image:
 
@@ -62,6 +63,10 @@ python scripts/render_preview.py \
 - The intended scientific message is discoverable within a few seconds.
 - Proposed and baseline methods are emphasized consistently but not
   manipulatively.
+- Colors and markers encode named semantic roles; they are not an unexplained
+  collection of attractive swatches.
+- Dense method families have visible grouping, spacing, or separators when the
+  labels alone are slow to scan.
 - Gridlines, borders, annotations, and decoration do not compete with the data.
 - Multi-panel order follows the narrative.
 
@@ -74,10 +79,18 @@ python scripts/render_preview.py \
 
 ### Polish
 
-- Whitespace and aspect ratio fit the target venue.
+- The exported artboard hugs the outermost title, label, legend, and mark with
+  small deliberate padding; an `outer_whitespace` warning is fixed unless the
+  confirmed design intentionally needs that margin.
+- Whitespace inside the composition and aspect ratio fit the target venue.
 - Panel sizes, baselines, legends, and typography are consistent.
 - Raster borders and backgrounds are coherent.
 - The result looks intentional at final export size.
+
+Passing collision and crop checks is not enough. Compare visual weight across
+titles, labels, grids, highlights, and marks, and ask whether the figure looks
+like one coherent composition rather than several default axes placed beside
+each other.
 
 ## Revision policy
 
@@ -90,6 +103,11 @@ Normally perform up to three render-review passes:
 Do not make arbitrary style churn after the acceptance criteria pass. Continue
 beyond three passes only when a clear, safe fix remains. Ask the user when the
 remaining issue depends on scientific intent, not taste.
+
+For Matplotlib exports, prefer the bundled `finalize_figure(...)`. Otherwise use
+one layout engine and save PNG/PDF with `bbox_inches="tight"` and roughly
+`0.02`–`0.05` inches of padding. Do not remove whitespace by clipping labels or
+shrinking typography below the confirmed final-size requirement.
 
 ## QA report
 
