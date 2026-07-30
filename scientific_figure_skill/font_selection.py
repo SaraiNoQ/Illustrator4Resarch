@@ -211,7 +211,13 @@ def infer_font_tags(request: str | None = None, chart_style: Any | None = None, 
     tags: set[str] = set()
     text = " ".join(x for x in (request or "", venue or "") if x)
     lowered = text.lower()
+    explicit_sans = any(
+        cue in lowered
+        for cue in ("sans-serif", "sans serif", "sans_serif", "非衬线")
+    )
     for key, mapped in FONT_TEXT_CUES.items():
+        if key in {"serif", "衬线"} and explicit_sans:
+            continue
         if key in lowered:
             tags.update(mapped)
     for token in _tokens(text):
@@ -221,6 +227,9 @@ def infer_font_tags(request: str | None = None, chart_style: Any | None = None, 
     if not tags:
         tags.update({"journal", "conference", "clean", "sans_serif"})
     if {"handdrawn", "cartoon", "anime", "cute", "playful"} & tags:
+        tags.add("sans_serif")
+        tags.discard("serif")
+    if explicit_sans:
         tags.add("sans_serif")
         tags.discard("serif")
     return tags

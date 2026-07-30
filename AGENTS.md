@@ -13,12 +13,14 @@ Use this project when the user asks a coding agent to create, polish, or refacto
 
 ## Design model
 
-The skill has four independent design layers:
+The skill starts with a style-confirmation layer, followed by four independent
+rendering layers:
 
-1. **Palette engine**: color palette, generated palette variants, semantic color roles, categorical/sequential/diverging/cyclic/print-aware data roles.
-2. **Chart-style engine**: venue/form preset, grid, spines, line widths, bar edges, markers, legend framing, background, heatmap, hand-drawn, dark, and presentation effects.
-3. **Table-style engine**: paper three-line tables, compact appendix tables, DataFrame-style zebra tables, dashboard tables, editorial tables, and print-safe tables.
-4. **Font engine**: publication-safe font candidate registry, style-aware font scoring, and safe sans-serif correction for non-formal styles such as `cartoon_handdrawn`.
+1. **Style intake**: reference inspection, venue, chart grammar, palette, typography, layout, and confirmation state.
+2. **Palette engine**: color palette, generated palette variants, semantic color roles, categorical/sequential/diverging/cyclic/print-aware data roles.
+3. **Chart-style engine**: venue/form preset, grid, spines, line widths, bar edges, markers, legend framing, background, heatmap, hand-drawn, dark, and presentation effects.
+4. **Table-style engine**: paper three-line tables, compact appendix tables, DataFrame-style zebra tables, dashboard tables, editorial tables, and print-safe tables.
+5. **Font engine**: publication-safe font candidate registry, style-aware font scoring, and safe sans-serif correction for non-formal styles such as `cartoon_handdrawn`.
 
 Do not reduce chart design to color selection. `Nature科研风格`, `IEEE Transactions`, `seaborn whitegrid`, `ggplot2 theme_minimal`, `Datawrapper editorial`, `Tableau dashboard`, and `卡通手绘` imply different chart forms even if the palette is unchanged. Font choice is also separate: a cute hand-drawn chart should not silently inherit Times New Roman. Table style is separate again: a paper table should usually be three-line/booktabs-like, not a heavy dashboard grid.
 
@@ -30,6 +32,7 @@ Do not reduce chart design to color selection. `Nature科研风格`, `IEEE Trans
 - `skills/scientific-figure-making/scripts/figure_toolkit.py`: plotting helpers and legacy compatibility.
 - `skills/scientific-figure-making/scripts/preview_palette.py`: palette and style preview CLI.
 - `skills/scientific-figure-making/references/api-usage.md`: API examples.
+- `skills/scientific-figure-making/references/style-intake.md`: reference-first style audit and confirmation gate.
 - `skills/scientific-figure-making/references/font-workflow.md`: publication-safe font registry and workflow.
 - `skills/scientific-figure-making/references/palette-workflow.md`: palette heuristics and generated variants.
 - `skills/scientific-figure-making/references/style-workflow.md`: chart-style presets and venue/form rules.
@@ -94,32 +97,31 @@ Use this repository-local workflow for OpenCode because different OpenCode setup
 
 ## Figure-generation workflow
 
-Version 0.6 uses a guided workflow. The user does not need to provide a complete
-plot specification.
+Version 0.7 uses a style-first guided workflow.
 
-1. Inspect the supplied data, script, image, caption, or manuscript context.
-2. Create a concise Figure Brief covering the research question, intended
-   message, data semantics, recommended chart, defaults, assumptions, and
-   questions.
-3. Ask only when missing information changes scientific interpretation. Batch at
-   most three critical questions; default ordinary presentation choices.
-4. Choose the chart from the scientific message. Use panels rather than forcing
-   incompatible units onto one axis.
-5. Save and validate a Figure Spec for substantive tasks.
-6. Prefer `auto_figure_design(...)` from `scientific_figure_skill` inside the
+1. Inspect supplied data and any designated reference image.
+2. Audit venue, chart/grammar, palette, typography, and layout.
+3. If any style dimension is missing, create a Style Brief and ask each missing
+   item separately with a recommendation.
+4. Put up to three scientific questions after the style section in the same
+   response. “还没有决定” remains unresolved; “你决定/全部按推荐” is delegation.
+5. Do not create formal code, Figure Spec, PNG, or PDF until style, chart, and
+   scientific meaning are confirmed or delegated.
+6. Save and validate a schema 1.1 Figure Spec for substantive tasks.
+7. Prefer `auto_figure_design(...)` from `scientific_figure_skill` inside the
    repo, or `figure_design.py` from the global skill path.
-7. Use `FigureStyle(...)`, the selected palette/chart/table/font engines, bundled
+8. Use `FigureStyle(...)`, the selected palette/chart/table/font engines, bundled
    helpers, or raw Matplotlib as appropriate.
-8. Export PNG and PDF unless the user asks otherwise, then run the script from a
+9. Export PNG and PDF unless the user asks otherwise, then run the script from a
    clean process.
-9. Run `validate_figure.py`, generate an original/grayscale review sheet with
+10. Run `validate_figure.py`, generate an original/grayscale review sheet with
    `render_preview.py`, and inspect the actual image with an available image
    tool.
-10. Revise correctness, legibility, hierarchy, accessibility, and polish defects
+11. Revise correctness, style fidelity, legibility, hierarchy, accessibility, and polish defects
     before delivery.
-11. Report exact artifact paths, assumptions, QA results, visual-review passes,
+12. Report exact artifact paths, assumptions, QA results, visual-review passes,
     and the reproduction command.
-12. If repository logic changes, run `python -m pytest -q`.
+13. If repository logic changes, run `python -m pytest -q`.
 
 ## Quality rules
 
@@ -138,7 +140,8 @@ plot specification.
 - Always provide exact output paths.
 - Never invent the meaning of uncertainty such as `±`; ask whether it is SD,
   SE, CI, range, or another quantity.
-- Do not ask the user to choose an aesthetic option when a safe documented
-  default can proceed.
+- Ask unresolved style questions before uncertainty questions, unless the user
+  explicitly delegated those visual choices.
+- Do not silently replace unanswered style choices with defaults.
 - Do not claim visual QA passed without opening or reading the exported image.
 - Preserve a Figure Spec and deterministic QA report for substantive figures.

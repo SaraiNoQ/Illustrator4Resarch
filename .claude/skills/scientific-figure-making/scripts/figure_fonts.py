@@ -21,12 +21,12 @@ PUBLICATION_FONT_REGISTRY = {
 }
 
 _FONT_TAGS = {
-    "arial": {"formal", "journal", "conference", "clean", "ieee", "acm", "safe"},
-    "helvetica": {"formal", "journal", "nature", "science", "clean", "safe"},
-    "source_sans": {"modern", "ml", "neurips", "icml", "iclr", "safe"},
-    "noto_sans": {"unicode", "cjk", "chinese", "japanese", "safe"},
-    "trebuchet_sans": {"handdrawn", "cartoon", "anime", "cute", "playful", "rounded"},
-    "verdana": {"readable", "large", "slides", "cute", "rounded"},
+    "arial": {"formal", "journal", "conference", "clean", "ieee", "acm", "safe", "sans_serif"},
+    "helvetica": {"formal", "journal", "nature", "science", "clean", "safe", "sans_serif"},
+    "source_sans": {"modern", "ml", "neurips", "icml", "iclr", "safe", "sans_serif"},
+    "noto_sans": {"unicode", "cjk", "chinese", "japanese", "safe", "sans_serif"},
+    "trebuchet_sans": {"handdrawn", "cartoon", "anime", "cute", "playful", "rounded", "sans_serif"},
+    "verdana": {"readable", "large", "slides", "cute", "rounded", "sans_serif"},
     "times": {"serif", "traditional", "times"},
     "stix": {"serif", "math", "latex"},
 }
@@ -39,7 +39,8 @@ _CUES = {
     "nature": {"nature", "journal"}, "ieee": {"ieee", "formal"}, "acm": {"acm", "conference"},
     "neurips": {"neurips", "ml", "modern"}, "icml": {"icml", "ml", "modern"}, "iclr": {"iclr", "ml", "modern"},
     "中文": {"cjk", "chinese", "unicode"}, "日文": {"cjk", "japanese", "unicode"},
-    "times": {"times", "serif"}, "serif": {"serif"}, "衬线": {"serif"}, "非衬线": {"safe"},
+    "times": {"times", "serif"}, "serif": {"serif"}, "衬线": {"serif"},
+    "非衬线": {"safe", "sans_serif"}, "sans": {"safe", "sans_serif"},
 }
 
 
@@ -50,8 +51,14 @@ def _tokens(text: str | None) -> list[str]:
 def infer_font_tags(request: str | None = None, chart_style: Any | None = None, venue: str | None = None) -> set[str]:
     text = " ".join(x for x in (request or "", venue or "") if x)
     lowered = text.lower()
+    explicit_sans = any(
+        cue in lowered
+        for cue in ("sans-serif", "sans serif", "sans_serif", "非衬线")
+    )
     tags: set[str] = set()
     for key, mapped in _CUES.items():
+        if key in {"serif", "衬线"} and explicit_sans:
+            continue
         if key in lowered:
             tags.update(mapped)
     for token in _tokens(text):
@@ -60,9 +67,14 @@ def infer_font_tags(request: str | None = None, chart_style: Any | None = None, 
     name = str(name).lower()
     tags.update(_tokens(name))
     if getattr(chart_style, "use_xkcd", False) or name == "cartoon_handdrawn":
-        tags.update({"handdrawn", "cartoon", "playful", "rounded"})
+        tags.update({"handdrawn", "cartoon", "playful", "rounded", "sans_serif"})
+    if name in {"nature_journal", "ieee_transactions", "acm_conference", "neurips_ml", "publication_minimal"}:
+        tags.update({"journal", "conference", "formal", "sans_serif"})
     if not tags:
-        tags.update({"formal", "journal", "safe"})
+        tags.update({"formal", "journal", "safe", "sans_serif"})
+    if explicit_sans or tags & {"handdrawn", "cartoon", "anime", "cute", "playful"}:
+        tags.add("sans_serif")
+        tags.discard("serif")
     return tags
 
 
@@ -72,6 +84,10 @@ def suggest_fonts(request: str | None = None, chart_style: Any | None = None, ve
         s = len(tags & _FONT_TAGS[name])
         if name in {"times", "stix"} and tags & {"handdrawn", "cartoon", "anime", "cute", "playful"}:
             s -= 10
+        if name in {"times", "stix"} and "sans_serif" in tags:
+            s -= 10
+        if name not in {"times", "stix"} and "sans_serif" in tags:
+            s += 3
         if name not in {"times", "stix"} and "serif" not in tags:
             s += 2
         return s

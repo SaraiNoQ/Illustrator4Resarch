@@ -1,6 +1,9 @@
 # Chart style workflow
 
 Palette, chart style, table style, and font choice are separate design layers.
+This engine applies a confirmed design; it does not replace the style-intake
+conversation. Read `style-intake.md` first when the user has not provided or
+delegated these choices.
 
 - Palette controls color and semantic color roles.
 - Chart style controls plot grammar: grids, spines, line widths, markers, legend, background, and sketch effects.
@@ -9,12 +12,18 @@ Palette, chart style, table style, and font choice are separate design layers.
 
 ## Pipeline
 
-1. Parse the request for venue, ecosystem, output medium, and figure type cues.
-2. Call `resolve_chart_style(...)` for chart grammar.
-3. Call `auto_palette(...)` or `auto_figure_design(...)` separately for colors.
-4. For tables, call `resolve_table_style(...)` or use `design.table_style`.
-5. Apply chart form with `apply_publication_style(...)`.
-6. Apply table form with `apply_table_style(...)` when using Matplotlib tables.
+1. Use the Style Brief to confirm venue, chart grammar, palette, typography, and
+   layout. Explicit delegation counts as confirmation.
+2. Combine those answers into a concrete `confirmed_style_request`.
+3. Call `resolve_chart_style(...)` for confirmed chart grammar.
+4. Call `auto_palette(...)` or `auto_figure_design(...)` separately for colors.
+5. For tables, call `resolve_table_style(...)` or use `design.table_style`.
+6. Apply chart form with `apply_publication_style(...)`.
+7. Apply table form with `apply_table_style(...)` when using Matplotlib tables.
+
+If the deterministic resolver selects a preset that conflicts with a confirmed
+choice, pass the confirmed preset explicitly rather than accepting the heuristic
+winner.
 
 ## Chart-style families
 

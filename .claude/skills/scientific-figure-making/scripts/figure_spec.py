@@ -13,10 +13,19 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.1"
+SUPPORTED_SCHEMA_VERSIONS = {"1.0", SCHEMA_VERSION}
 MODES = {"guided", "direct", "refine", "multi_panel"}
 METRIC_DIRECTIONS = {"higher", "lower", "mixed", "unknown"}
 QUESTION_SEVERITIES = {"critical", "preference"}
+CHART_SELECTION_STATUSES = {"recommended", "confirmed"}
+STYLE_STATUSES = {"pending", "confirmed"}
+STYLE_SOURCES = {
+    "reference",
+    "explicit_prompt",
+    "questionnaire",
+    "approved_recommendation",
+}
 OUTPUT_FORMATS = {"png", "pdf", "svg", "eps"}
 UNCERTAINTY_KINDS = {
     "none",
@@ -69,16 +78,23 @@ def default_spec() -> dict[str, Any]:
         },
         "chart": {
             "type": "",
+            "selection_status": "recommended",
             "x": "",
             "y": "",
             "series": "",
             "panels": [],
         },
         "design": {
+            "style_status": "pending",
+            "style_source": "",
+            "reference_images": [],
             "venue": "general_publication",
             "column_width": "double",
             "chart_style": "publication_minimal",
             "palette_request": "colorblind-safe",
+            "font_request": "available publication-safe sans-serif",
+            "graphic_grammar": "clean academic axes and restrained grid",
+            "layout_request": "double-column layout with a non-overlapping legend",
             "semantic_roles": {},
             "accessibility": [
                 "colorblind_safe",
@@ -152,12 +168,24 @@ def validate_spec(spec: Mapping[str, Any]) -> ValidationResult:
     warnings: list[ValidationIssue] = []
 
     schema_version = spec.get("schema_version")
-    if schema_version != SCHEMA_VERSION:
+    if (
+        not isinstance(schema_version, str)
+        or schema_version not in SUPPORTED_SCHEMA_VERSIONS
+    ):
         errors.append(
             ValidationIssue(
                 "error",
                 "schema_version",
-                f"must equal {SCHEMA_VERSION!r}",
+                f"must be one of {sorted(SUPPORTED_SCHEMA_VERSIONS)}",
+            )
+        )
+    elif schema_version == "1.0":
+        warnings.append(
+            ValidationIssue(
+                "warning",
+                "schema_version",
+                "legacy schema 1.0 has no explicit style-confirmation record; "
+                "use schema 1.1 for new figures",
             )
         )
 
@@ -225,6 +253,32 @@ def validate_spec(spec: Mapping[str, Any]) -> ValidationResult:
 
     chart = _mapping(spec.get("chart"), "chart", errors)
     chart_type = _nonempty_text(chart.get("type"), "chart.type", errors)
+    if schema_version == SCHEMA_VERSION:
+        selection_status = _nonempty_text(
+            chart.get("selection_status"),
+            "chart.selection_status",
+            errors,
+        )
+        if (
+            selection_status
+            and selection_status not in CHART_SELECTION_STATUSES
+        ):
+            errors.append(
+                ValidationIssue(
+                    "error",
+                    "chart.selection_status",
+                    f"must be one of {sorted(CHART_SELECTION_STATUSES)}",
+                )
+            )
+        elif selection_status == "recommended":
+            errors.append(
+                ValidationIssue(
+                    "error",
+                    "chart.selection_status",
+                    "is only recommended; the user must confirm or delegate "
+                    "the chart before formal rendering",
+                )
+            )
     if chart_type not in {"table", "schematic"}:
         _nonempty_text(chart.get("x"), "chart.x", errors)
         _nonempty_text(chart.get("y"), "chart.y", errors)
@@ -233,6 +287,71 @@ def validate_spec(spec: Mapping[str, Any]) -> ValidationResult:
         errors.append(ValidationIssue("error", "chart.panels", "must be a list"))
 
     design = _mapping(spec.get("design"), "design", errors)
+    if schema_version == SCHEMA_VERSION:
+        style_status = _nonempty_text(
+            design.get("style_status"),
+            "design.style_status",
+            errors,
+        )
+        if style_status and style_status not in STYLE_STATUSES:
+            errors.append(
+                ValidationIssue(
+                    "error",
+                    "design.style_status",
+                    f"must be one of {sorted(STYLE_STATUSES)}",
+                )
+            )
+        elif style_status == "pending":
+            errors.append(
+                ValidationIssue(
+                    "error",
+                    "design.style_status",
+                    "is pending; resolve or explicitly delegate every style "
+                    "dimension before formal rendering",
+                )
+            )
+
+        style_source = _nonempty_text(
+            design.get("style_source"),
+            "design.style_source",
+            errors,
+        )
+        if style_source and style_source not in STYLE_SOURCES:
+            errors.append(
+                ValidationIssue(
+                    "error",
+                    "design.style_source",
+                    f"must be one of {sorted(STYLE_SOURCES)}",
+                )
+            )
+
+        reference_images = _string_list(
+            design.get("reference_images"),
+            "design.reference_images",
+            errors,
+            allow_empty=True,
+        )
+        if style_source == "reference" and not reference_images:
+            errors.append(
+                ValidationIssue(
+                    "error",
+                    "design.reference_images",
+                    "must identify at least one designated style reference "
+                    "when design.style_source is 'reference'",
+                )
+            )
+
+        for field in (
+            "venue",
+            "column_width",
+            "chart_style",
+            "palette_request",
+            "font_request",
+            "graphic_grammar",
+            "layout_request",
+        ):
+            _nonempty_text(design.get(field), f"design.{field}", errors)
+
     if not isinstance(design.get("semantic_roles", {}), Mapping):
         errors.append(
             ValidationIssue("error", "design.semantic_roles", "must be an object")
@@ -248,7 +367,7 @@ def validate_spec(spec: Mapping[str, Any]) -> ValidationResult:
                 "must be a list of strings",
             )
         )
-    if not design.get("venue"):
+    if schema_version == "1.0" and not design.get("venue"):
         warnings.append(
             ValidationIssue(
                 "warning",
@@ -256,7 +375,7 @@ def validate_spec(spec: Mapping[str, Any]) -> ValidationResult:
                 "is missing; use and document a general publication default",
             )
         )
-    if not design.get("column_width"):
+    if schema_version == "1.0" and not design.get("column_width"):
         warnings.append(
             ValidationIssue(
                 "warning",

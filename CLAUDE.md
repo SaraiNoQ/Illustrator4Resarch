@@ -22,8 +22,8 @@ Invoke globally:
 
 ```text
 /scientific-figure-making
-results.csv 包含论文主实验结果，请你决定最合适的图表和投稿级设计。
-Ours 是本文方法；普通视觉要求使用合理默认值。
+results.csv 包含论文主实验结果，请你推荐最合适的图表。
+Ours 是本文方法；视觉方向尚未确定，请先逐项询问投稿场景、图形语法、配色、字体和版式。
 生成 PNG/PDF 后检查实际图片并修复问题。
 ```
 
@@ -44,15 +44,17 @@ skills/scientific-figure-making/SKILL.md
 ## What Claude should do when the skill is used
 
 1. Accept incomplete requests and infer guided, direct, refinement, or multi-panel mode.
-2. Inspect inputs and create a Figure Brief before coding.
-3. Ask only about ambiguities that change scientific meaning; use documented defaults for presentation.
-4. Choose the chart from the research message and record a Figure Spec.
-5. Treat palette, chart style, table style, font, layout, and semantic roles as separate decisions.
-6. Use `auto_figure_design(...)` from `scientific_figure_skill` inside this repository.
-7. Outside the repository, use the standalone scripts bundled with the skill.
-8. Generate complete runnable Python/Matplotlib code and export PNG/PDF.
-9. Validate exports, generate an original/grayscale review image, and read the actual image.
-10. Revise visible defects and report exact artifact paths, assumptions, and QA status.
+2. Inspect designated reference images before asking visual questions.
+3. Create a Style Brief and ask every unresolved venue, chart/grammar, palette, typography, and layout question first.
+4. Append up to three scientific questions after the style section in the same response.
+5. Treat explicit “you decide/use all recommendations” language as delegation; do not treat “not decided” as delegation.
+6. Block formal code, Figure Spec, PNG, and PDF until style, chart, and scientific meaning are confirmed.
+7. Record the confirmed contract in Figure Spec 1.1.
+8. Use `auto_figure_design(...)` from `scientific_figure_skill` inside this repository.
+9. Outside the repository, use the standalone scripts bundled with the skill.
+10. Generate complete runnable Python/Matplotlib code and export PNG/PDF.
+11. Validate exports, generate an original/grayscale review image, and read the actual image.
+12. Revise visible defects and report exact artifact paths, assumptions, and QA status.
 
 ## Style behavior
 

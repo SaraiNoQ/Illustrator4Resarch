@@ -1,5 +1,5 @@
 {
-  "schema_version": "1.0",
+  "schema_version": "1.1",
   "mode": "guided",
   "research_goal": {
     "question": "Which method performs best across the four benchmark datasets?",
@@ -19,16 +19,23 @@
   },
   "chart": {
     "type": "grouped_bar",
+    "selection_status": "confirmed",
     "x": "dataset",
     "y": "Accuracy / Success Rate (%)",
     "series": "method",
     "panels": []
   },
   "design": {
+    "style_status": "confirmed",
+    "style_source": "approved_recommendation",
+    "reference_images": [],
     "venue": "general_publication",
     "column_width": "double",
     "chart_style": "publication_minimal",
     "palette_request": "colorblind-safe with non-color secondary encoding",
+    "font_request": "available Arial/Helvetica-like sans-serif",
+    "graphic_grammar": "grouped bars with open axes, light y-grid, and hatch redundancy",
+    "layout_request": "double-column landscape with a two-row top legend",
     "semantic_roles": {
       "Fed-SOLO": "proposed",
       "FedAvg-LoRA": "baseline",
@@ -51,7 +58,7 @@
   },
   "assumptions": [
     "No uncertainty or raw replicates were supplied, so no error bars are shown.",
-    "A general double-column publication layout is used because no venue was specified."
+    "The user explicitly delegated unspecified visual decisions and approved the recommended general double-column publication layout."
   ],
   "open_questions": [],
   "acceptance_criteria": [

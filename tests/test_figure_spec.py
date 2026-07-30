@@ -29,11 +29,14 @@ def valid_spec():
     }
     spec["chart"] = {
         "type": "grouped_bar",
+        "selection_status": "confirmed",
         "x": "dataset",
         "y": "Accuracy (%)",
         "series": "method",
         "panels": [],
     }
+    spec["design"]["style_status"] = "confirmed"
+    spec["design"]["style_source"] = "approved_recommendation"
     spec["acceptance_criteria"] = [
         "Every method/dataset value is represented once.",
         "Labels remain readable at double-column width.",
@@ -91,6 +94,102 @@ def test_preference_question_warns_but_does_not_block():
 
     assert result.valid is True
     assert any("documented default" in issue.message for issue in result.warnings)
+
+
+def test_pending_style_blocks_formal_rendering():
+    spec = valid_spec()
+    spec["design"]["style_status"] = "pending"
+
+    result = validate_spec(spec)
+
+    assert result.valid is False
+    assert any(
+        issue.path == "design.style_status" and "pending" in issue.message
+        for issue in result.errors
+    )
+
+
+def test_recommended_chart_blocks_formal_rendering():
+    spec = valid_spec()
+    spec["chart"]["selection_status"] = "recommended"
+
+    result = validate_spec(spec)
+
+    assert result.valid is False
+    assert any(
+        issue.path == "chart.selection_status"
+        and "confirm or delegate" in issue.message
+        for issue in result.errors
+    )
+
+
+def test_reference_style_requires_reference_image():
+    spec = valid_spec()
+    spec["design"]["style_source"] = "reference"
+    spec["design"]["reference_images"] = []
+
+    result = validate_spec(spec)
+
+    assert result.valid is False
+    assert any(
+        issue.path == "design.reference_images" for issue in result.errors
+    )
+
+
+def test_reference_style_with_image_is_valid():
+    spec = valid_spec()
+    spec["design"]["style_source"] = "reference"
+    spec["design"]["reference_images"] = ["references/target-style.png"]
+
+    result = validate_spec(spec)
+
+    assert result.valid is True
+    assert result.errors == ()
+
+
+def test_confirmed_style_requires_every_recorded_dimension():
+    spec = valid_spec()
+    spec["design"]["font_request"] = ""
+
+    result = validate_spec(spec)
+
+    assert result.valid is False
+    assert any(
+        issue.path == "design.font_request" for issue in result.errors
+    )
+
+
+def test_legacy_schema_1_0_remains_valid_with_warning():
+    spec = valid_spec()
+    spec["schema_version"] = "1.0"
+    for key in (
+        "style_status",
+        "style_source",
+        "reference_images",
+        "font_request",
+        "graphic_grammar",
+        "layout_request",
+    ):
+        spec["design"].pop(key, None)
+    spec["chart"].pop("selection_status", None)
+
+    result = validate_spec(spec)
+
+    assert result.valid is True
+    assert any(
+        issue.path == "schema_version" and "legacy schema 1.0" in issue.message
+        for issue in result.warnings
+    )
+
+
+def test_non_string_schema_version_reports_error_instead_of_crashing():
+    spec = valid_spec()
+    spec["schema_version"] = ["1.1"]
+
+    result = validate_spec(spec)
+
+    assert result.valid is False
+    assert any(issue.path == "schema_version" for issue in result.errors)
 
 
 def test_unknown_uncertainty_and_direction_warn():

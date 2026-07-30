@@ -4,12 +4,13 @@ Use these prompts when calling this repository from Codex.
 
 ## 1. Guided main-results request
 
-This is the preferred v0.6 test because it does not preselect a chart or style.
+This is the preferred v0.7 style-intake test because it says the visual design
+is undecided rather than delegating it.
 
 ```text
 Read AGENTS.md and use skills/scientific-figure-making/SKILL.md.
 
-这些是论文主实验结果，请完成投稿级主图。图类型、布局、配色和输出细节由你根据论文表达需要决定。Fed-SOLO 是本文方法；没有提供的普通视觉要求采用合理默认值。生成后检查真实图片并修复问题。
+这些是论文主实验结果，请完成投稿级主图。Fed-SOLO 是本文方法；我还没有决定投稿风格、图类型、布局、配色和字体。请先给出 Style Brief，对每个缺失维度给出推荐并让我确认；样式问题之后再问科学问题，确认前不要正式绘图。
 
 Data:
 Datasets: GSM8K, MATH, HotpotQA, WebShop
@@ -22,13 +23,12 @@ FedReFT: 66.2, 37.1, 63.8, 52.5
 
 Expected behavior:
 
-- create a Figure Brief;
-- do not ask the user to choose a chart or palette;
-- create a Figure Spec;
-- render PNG/PDF and a runnable script;
-- run deterministic QA;
-- create and inspect an original/grayscale preview;
-- revise observed defects.
+- create a Style Brief before scientific interpretation;
+- ask venue, chart/grammar, palette, typography, and layout separately;
+- recommend an answer for each style question;
+- wait for style and scientific confirmation;
+- create a schema 1.1 Figure Spec and render only after confirmation;
+- run deterministic and visual QA.
 
 ## 2. Preview palettes only
 
@@ -56,7 +56,8 @@ Accuracy 越高越好，其他你来决定。
 ```
 
 Expected behavior: recommend the chart, but ask whether `±` means SD, SE, CI,
-range, or another quantity before rendering error bars.
+range, or another quantity before rendering error bars. Because “其他你来决定”
+is explicit delegation, do not ask redundant style questions.
 
 ## 4. Refinement mode
 
@@ -67,4 +68,15 @@ Inspect figures/current.png and scripts/plot_current.py. The legend hides two
 curves and the x tick labels overlap. Improve it to submission quality without
 changing any values. Preserve the current blue for Ours. Inspect the original
 image before editing, then render and compare the revision.
+```
+
+## 5. Designated visual reference
+
+```text
+Read AGENTS.md and use skills/scientific-figure-making/SKILL.md.
+
+Use results.csv for the main paper figure. references/target.png is the visual
+reference: preserve its color hierarchy, sans-serif direction, open axes, and
+top legend. Inspect it before asking questions and ask only about unresolved
+style or scientific details.
 ```

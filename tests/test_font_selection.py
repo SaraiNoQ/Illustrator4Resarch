@@ -1,4 +1,6 @@
 import matplotlib as mpl
+import sys
+from pathlib import Path
 
 from scientific_figure_skill import (
     FigureStyle,
@@ -9,6 +11,15 @@ from scientific_figure_skill import (
     select_font_candidate,
     select_font_family,
 )
+
+STANDALONE_SCRIPT_DIR = (
+    Path(__file__).resolve().parents[1]
+    / "skills"
+    / "scientific-figure-making"
+    / "scripts"
+)
+sys.path.insert(0, str(STANDALONE_SCRIPT_DIR))
+from figure_fonts import select_font_family as select_standalone_font_family
 
 
 def test_anime_handdrawn_request_selects_publication_safe_sans_font():
@@ -69,3 +80,23 @@ def test_selected_family_filters_unavailable_concrete_fonts():
     assert family
     if available:
         assert all(name in available or name in generic for name in family)
+
+
+def test_explicit_sans_serif_request_cannot_be_misread_as_serif():
+    family = select_font_family(
+        request="clean sans-serif typography for a general publication",
+        chart_style="publication_minimal",
+    )
+
+    assert family[-1] == "sans-serif"
+    assert "serif" not in family
+
+
+def test_standalone_explicit_sans_serif_request_uses_sans_stack():
+    family = select_standalone_font_family(
+        request="clean sans-serif typography for a general publication",
+        chart_style="publication_minimal",
+    )
+
+    assert family[-1] == "sans-serif"
+    assert "serif" not in family

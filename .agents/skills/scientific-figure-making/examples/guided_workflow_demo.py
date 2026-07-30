@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""End-to-end v0.6 guided-workflow demo figure."""
+"""End-to-end v0.7 style-confirmed guided-workflow demo figure."""
 from __future__ import annotations
 
 import sys
@@ -19,10 +19,15 @@ from figure_fonts import select_font_family
 from figure_toolkit import finalize_figure, make_grouped_bar
 
 
+CONFIRMED_CHART_STYLE = "publication_minimal"
+
+
 def main() -> None:
     request = (
         "Main paper result comparing four methods on four datasets. "
-        "General publication style, colorblind safe, proposed method emphasized."
+        "Use the recommended general-publication double-column style, "
+        "colorblind-safe palette, clean sans-serif typography, grouped bars, "
+        "and strong but honest proposed-method emphasis."
     )
     categories = ["GSM8K", "MATH", "HotpotQA", "WebShop"]
     labels = ["Fed-SOLO", "FedAvg-LoRA", "Local LoRA", "FedReFT"]
@@ -44,14 +49,14 @@ def main() -> None:
     )
     font_family = select_font_family(
         request=request,
-        chart_style=design.chart_style,
+        chart_style=CONFIRMED_CHART_STYLE,
         venue="general_publication",
     )
     apply_publication_style(
         FigureStyle(
             palette=design.palette.colors,
             color_roles=design.palette.color_roles,
-            chart_style=design.chart_style,
+            chart_style=CONFIRMED_CHART_STYLE,
             font_family=font_family,
             dpi=300,
         )

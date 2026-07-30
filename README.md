@@ -29,11 +29,11 @@
 
 `Illustrator4Resarch` is a reusable agent skill for planning, creating, inspecting, and refining Python/Matplotlib figures for papers, theses, reports, and research slides.
 
-Version 0.6 no longer requires the researcher to prepare a complete plotting prompt. Give it raw results, a manuscript claim, an existing script/image, or a broad request such as “make the main paper figure.” The skill builds a Figure Brief, asks only questions that can change scientific meaning, chooses and explains the chart, records a Figure Spec, renders the outputs, performs deterministic and visual QA, and revises observed defects.
+Version 0.7 adds style-first orchestration. Give it raw results, a manuscript claim, an existing script/image, a visual reference, or a broad request such as “make the main paper figure.” When visual intent is incomplete, the skill first builds a Style Brief, inspects any designated reference, asks separately about unresolved venue, chart grammar, palette, typography, and layout, then asks scientific questions in the same batch. It renders only after both contracts are confirmed or delegated.
 
 | Layer | Responsibility | Examples |
 | --- | --- | --- |
-| Guided workflow | Turns incomplete inputs into a checked figure plan | Figure Brief, critical questions, assumptions, Figure Spec |
+| Style-first workflow | Turns incomplete inputs into a confirmed visual and scientific contract | Style Brief, reference inspection, confirmation gates, Figure Spec 1.1 |
 | Palette engine | Selects colorblind-safe palettes and semantic roles | proposed method, baseline, ablation, neutral, highlight |
 | Chart-style engine | Selects plotting form and publication aesthetics | Nature-like, IEEE Transactions, NeurIPS, seaborn-like, thesis clean |
 | Table-style engine | Selects paper, appendix, dashboard, or print-safe table grammar | three-line table, compact table, zebra table |
@@ -104,7 +104,7 @@ The installer is idempotent. If the target skill directory already exists, it re
 Use this test request after installation:
 
 ```text
-请根据下面的数据制作论文主实验图。图类型、排版、配色和输出细节由你根据数据与论文表达需要决定；Fed-SOLO 是本文方法。
+请根据下面的数据制作论文主实验图。Fed-SOLO 是本文方法；我还没有决定期刊风格、图类型、排版、配色和字体。请先给出 Style Brief，对每个缺失维度给出推荐并让我确认；然后再列出科学问题，确认前不要正式绘图。
 
 Datasets: GSM8K, MATH, HotpotQA, WebShop
 Metric: Accuracy / Success Rate (%)
@@ -114,9 +114,9 @@ Local LoRA: 63.0, 34.9, 61.3, 49.8
 FedReFT: 66.2, 37.1, 63.8, 52.5
 ```
 
-The agent should proceed without asking you to choose a chart or palette, then return a runnable script, PNG, PDF, Figure Spec, QA report, and original/grayscale review preview.
+The first response should ask the five unresolved style dimensions before any scientific questions and should not create formal artifacts yet. After confirmation, the agent returns a runnable script, PNG, PDF, schema 1.1 Figure Spec, QA report, and original/grayscale review preview.
 
-If a request contains scientifically ambiguous uncertainty such as `78.4 ± 0.7`, the skill asks what `±` means before rendering error bars. Aesthetic omissions use documented defaults instead.
+If a request contains scientifically ambiguous uncertainty such as `78.4 ± 0.7`, the `±` question appears after the style section. Neither unresolved style nor unresolved uncertainty may silently pass into formal rendering.
 
 ## Agent Workflows
 
@@ -126,8 +126,8 @@ After global installation:
 
 ```text
 /scientific-figure-making
-results.csv 是论文主实验结果，请你读取数据并决定最合适的论文图。
-突出 Ours；没有提供的普通设计要求请使用合理默认值。
+results.csv 是论文主实验结果，请你读取数据并推荐最合适的论文图。
+突出 Ours；视觉方向尚未确定，请先逐项询问期刊、图形语法、配色、字体和版式。
 生成后检查真实导出图片并修复问题。
 ```
 
@@ -144,8 +144,8 @@ After global installation:
 ```text
 $scientific-figure-making
 Use results.csv to create the main paper figure.
-Infer the honest chart form and publication-safe design; Ours is the proposed method.
-Create the Figure Brief and Figure Spec, render PNG/PDF, run deterministic QA,
+Ours is the proposed method. Start with a Style Brief and ask about every unresolved visual dimension before scientific clarifications.
+After confirmation, create Figure Spec 1.1, render PNG/PDF, run deterministic QA,
 inspect the original/grayscale preview, and revise visible defects.
 ```
 
@@ -166,8 +166,8 @@ opencode
 ```text
 Read AGENTS.md and use skills/scientific-figure-making/SKILL.md as the figure-generation skill.
 Read results.csv and turn it into the strongest honest main-paper figure.
-Use the guided workflow because the chart and style are unspecified.
-Render the outputs, validate them, inspect the review preview, and revise defects.
+Use style-first guided mode because chart and style are unspecified. Ask for confirmation before rendering.
+After confirmation, validate the outputs, inspect the review preview, and revise defects.
 ```
 
 The OpenCode path is intentionally repository-local: it relies on `AGENTS.md` plus the canonical skill folder, so it works even when different OpenCode setups use different command/plugin conventions.
@@ -185,8 +185,8 @@ Then ask Hermes to use the installed skill:
 ```text
 Use the scientific-figure-making skill from ~/.hermes/skills/scientific-figure-making/SKILL.md.
 Use results.csv to make a publication-ready main-results figure.
-Decide the chart and safe defaults, ask only scientifically critical questions,
-then render, validate, visually inspect, and revise the exports.
+Lead with a Style Brief and unresolved style questions, then ask scientific questions.
+Render only after confirmation, then validate, visually inspect, and revise the exports.
 ```
 
 For non-standard Hermes deployments, install to the directory that your Hermes instance scans:
@@ -279,6 +279,7 @@ Illustrator4Resarch/
 │   │   ├── global-installation.md
 │   │   ├── palette-workflow.md
 │   │   ├── requirement-workflow.md
+│   │   ├── style-intake.md
 │   │   ├── style-workflow.md
 │   │   ├── table-workflow.md
 │   │   └── visual-qa.md
@@ -294,6 +295,7 @@ Illustrator4Resarch/
 ├── scientific_figure_skill/                   # Importable Python implementation
 ├── examples/
 ├── docs/guided-workflow-v0.6-plan.md
+├── docs/style-first-workflow-v0.7.md
 ├── scripts/
 └── tests/
 ```

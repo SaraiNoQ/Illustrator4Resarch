@@ -3,67 +3,117 @@
   "evals": [
     {
       "id": 1,
-      "prompt": "我把主实验结果贴在下面了，帮我做成论文主图。没有指定图类型和风格，你根据数据和论文表达需要决定。Datasets: GSM8K, MATH, HotpotQA, WebShop. Accuracy (%): Ours 72.4, 41.8, 68.2, 58.0; FedAvg-LoRA 68.1, 38.7, 64.5, 54.2; Local LoRA 63.0, 34.9, 61.3, 49.8; FedReFT 66.2, 37.1, 63.8, 52.5. Ours 是本文方法。请创建可复现脚本和最终图片。",
-      "expected_output": "The agent independently creates a Figure Brief, chooses and explains an honest comparison chart, records safe defaults, renders PNG/PDF, validates and visually reviews the export, and returns reproducible artifacts without asking aesthetic questions.",
+      "prompt": "我把主实验结果贴在下面了，帮我做成论文主图。没有指定图类型和风格，你根据数据和论文表达需要决定；全部视觉选择按你的推荐执行。Datasets: GSM8K, MATH, HotpotQA, WebShop. Accuracy (%): Ours 72.4, 41.8, 68.2, 58.0; FedAvg-LoRA 68.1, 38.7, 64.5, 54.2; Local LoRA 63.0, 34.9, 61.3, 49.8; FedReFT 66.2, 37.1, 63.8, 52.5. Ours 是本文方法。请创建可复现脚本和最终图片。",
+      "expected_output": "Explicit delegation closes the style gate. The agent records approved recommendations without a redundant questionnaire, renders all artifacts, and performs deterministic and visual QA.",
       "files": [],
       "expectations": [
-        "The response includes a Figure Brief or equivalent statement of research question, intended message, chart recommendation, and assumptions.",
-        "The agent does not ask the user to choose a palette, chart style, or file format before proceeding.",
-        "All 16 supplied values are represented without invention or alteration.",
-        "A runnable Python script, PNG, PDF, Figure Spec, QA report, and review preview are created.",
-        "The agent runs deterministic QA and explicitly performs or reports the status of visual image inspection."
+        "The Style Brief records that visual choices were explicitly delegated or approved as recommended.",
+        "The agent does not ask redundant palette, font, venue, grammar, or layout questions.",
+        "All 16 values are represented without invention or alteration.",
+        "A runnable Python script, PNG, PDF, schema 1.1 Figure Spec, QA report, and review preview are created.",
+        "The agent runs deterministic QA and explicitly performs or reports visual inspection."
       ]
     },
     {
       "id": 2,
-      "prompt": "请把以下消融结果画成论文图：Full 78.4 ± 0.7, w/o routing 74.2 ± 1.1, w/o SecAgg 76.0 ± 0.8, w/o DP 75.1 ± 0.9, Baseline 70.3 ± 1.4。越高越好，其他你来决定。",
-      "expected_output": "The agent identifies that the meaning of ± is scientifically critical and asks a concise question before rendering error bars, while still proposing a recommended chart and defaults.",
+      "prompt": "请根据下面的实验结果制作论文主结果图。重点展示 Proposed 方法整体表现更好，但我还没有决定用什么图、配色和版式。dataset,method,accuracy,error; CIFAR-10,Baseline,84.2,0.8; CIFAR-10,Method-A,86.7,0.6; CIFAR-10,Method-B,87.4,0.5; CIFAR-10,Proposed,89.8,0.4; CIFAR-100,Baseline,61.5,1.2; CIFAR-100,Method-A,64.8,0.9; CIFAR-100,Method-B,66.1,0.8; CIFAR-100,Proposed,69.3,0.7; Tiny-ImageNet,Baseline,48.7,1.5; Tiny-ImageNet,Method-A,51.2,1.2; Tiny-ImageNet,Method-B,53.6,1.1; Tiny-ImageNet,Proposed,56.4,0.9; ImageNet-100,Baseline,72.1,0.9; ImageNet-100,Method-A,74.0,0.8; ImageNet-100,Method-B,75.3,0.7; ImageNet-100,Proposed,77.8,0.6",
+      "expected_output": "The first response leads with a Style Brief, asks each missing visual dimension with a recommendation, then asks what error means. It creates no formal plotting artifacts before the user answers.",
       "files": [],
       "expectations": [
-        "The agent asks whether the ± values are SD, SE, CI, range, or another quantity.",
-        "The question explains that the answer changes error-bar semantics or the caption.",
-        "The agent asks no more than three questions in the batch.",
-        "The agent recommends an ablation comparison form instead of asking the user to select a chart.",
-        "The agent does not invent an uncertainty interpretation."
+        "The first response presents a Style Brief before scientific interpretation.",
+        "The style-question block appears before the scientific-interpretation block.",
+        "Style questions separately cover venue/use context, recommended chart and grammar, palette/emphasis, typography, and layout.",
+        "Every missing style question includes a task-specific recommendation.",
+        "The error-semantics question appears after all style questions.",
+        "No formal script, final Figure Spec, PNG, or PDF is created before confirmation."
       ]
     },
     {
       "id": 3,
-      "prompt": "做一张能放进论文的效率对比图。Method A accuracy 82.1%, latency 140 ms; Method B 80.4%, 95 ms; Method C 83.0%, 210 ms; Ours 82.8%, 105 ms。希望同时体现效果和速度优势，其他要求你来完善。",
-      "expected_output": "The agent recognizes a two-objective trade-off, confirms or safely infers axis preference directions, recommends a scatter/Pareto design, and avoids a misleading dual axis.",
-      "files": [],
+      "prompt": "把 results.csv 做成论文主图。attached reference-style.png 是我想要的视觉参考，请沿用它的颜色层级、无衬线字体方向、开放坐标轴和顶部图例；如果参考图没有说明的内容再问我。Ours 是本文方法。",
+      "expected_output": "The agent inspects the designated image first, summarizes observable style, does not repeat questions answered by it, and asks only unresolved style or scientific questions.",
+      "files": [
+        "evals/fixtures/reference-style.png"
+      ],
       "expectations": [
-        "The Figure Brief identifies accuracy as higher-is-better and latency as lower-is-better.",
-        "The recommended chart is a scatter/trade-off plot rather than a dual-axis bar-line combination.",
-        "A Pareto frontier is used only with the preference directions made explicit.",
-        "All four methods and both units are represented accurately.",
-        "The output is rendered, validated, and visually inspected."
+        "The designated reference image is inspected before style questions are asked.",
+        "The Style Brief identifies reference-derived palette, typography direction, axes grammar, and legend placement.",
+        "The agent does not re-ask the user to choose colors, serif versus sans-serif, open versus boxed axes, or legend placement.",
+        "Only style dimensions or scientific semantics not recoverable from the prompt, reference, or data remain as questions.",
+        "Formal rendering remains blocked until the remaining questions are resolved."
       ]
     },
     {
       "id": 4,
-      "prompt": "这个现有 Matplotlib 图太挤了，图例遮挡曲线，横坐标标签也重叠。请读取现有脚本和图片，在不改变数据的前提下改成投稿质量；保留当前蓝色作为我们的方法。先检查原图，再动代码。",
-      "expected_output": "The agent enters refinement mode, inspects the original render before editing, preserves data and the intentional blue semantic role, makes targeted changes, rerenders, and compares the result.",
+      "prompt": "Conversation state: The assistant previously recommended a grouped dot-interval plot and asked unresolved questions about venue, palette, typography, and layout, followed by whether error means SD or SE. The user replied only: error 是标准差。Continue the scientific-figure-making workflow.",
+      "expected_output": "The agent records SD but keeps the style gate open, re-asks only unresolved style items, and does not render a formal figure.",
       "files": [],
       "expectations": [
-        "The agent inspects the current image before editing the script.",
-        "The agent distinguishes correctness, legibility, hierarchy, accessibility, and polish issues.",
-        "The existing data and the proposed method's blue semantic role are preserved.",
-        "The revised image is rendered and compared with the original.",
-        "The final handoff lists the targeted changes and remaining limitations."
+        "The response records that error means standard deviation.",
+        "The response explicitly states that style confirmation is still pending.",
+        "Only the unresolved style dimensions are asked again.",
+        "No formal script, final Figure Spec, PNG, or PDF is created."
       ]
     },
     {
       "id": 5,
-      "prompt": "我需要一张图同时展示五个模型的 Accuracy (%)、GPU memory (GB) 和 Training time (hours)，用于论文结果部分。数据都在 results.csv，帮我决定怎么排版，尽量不要拆成多张独立图片。",
-      "expected_output": "The agent detects incompatible units, proposes a coordinated multi-panel figure instead of a shared or dual y-axis, and keeps the panels visually consistent.",
+      "prompt": "请画消融图。使用 IEEE Transactions 双栏风格、黑白打印、Helvetica 类无衬线字体、横向点区间图、开放坐标轴和顶部图例；这些样式已经确认。Full 78.4 ± 0.7, w/o routing 74.2 ± 1.1, w/o SecAgg 76.0 ± 0.8, w/o DP 75.1 ± 0.9, Baseline 70.3 ± 1.4。越高越好。",
+      "expected_output": "Style is already explicit, so the agent asks only what ± means and does not repeat aesthetic questions or render error bars prematurely.",
+      "files": [],
+      "expectations": [
+        "The resolved Style Brief reflects the explicit IEEE, monochrome, sans-serif, chart, grammar, and layout choices.",
+        "No redundant style question is asked.",
+        "The agent asks whether ± is SD, SE, CI, range, or another quantity.",
+        "The agent does not invent uncertainty semantics or render formal error bars before the answer."
+      ]
+    },
+    {
+      "id": 6,
+      "prompt": "做一张能放进论文的效率对比图。Method A accuracy 82.1%, latency 140 ms; Method B 80.4%, 95 ms; Method C 83.0%, 210 ms; Ours 82.8%, 105 ms。希望同时体现效果和速度优势，样式还没想好。",
+      "expected_output": "The agent leads with style intake, recommends a scatter/Pareto grammar for confirmation, and then states the higher-accuracy/lower-latency scientific interpretation.",
+      "files": [],
+      "expectations": [
+        "Style questions appear before scientific questions.",
+        "The recommended chart is a scatter or trade-off plot rather than a dual-axis bar-line combination.",
+        "Accuracy is identified as higher-is-better and latency as lower-is-better.",
+        "No formal rendering occurs before style confirmation."
+      ]
+    },
+    {
+      "id": 7,
+      "prompt": "这个现有 Matplotlib 图太挤了，图例遮挡曲线，横坐标标签也重叠。请读取现有脚本和图片，在不改变数据的前提下改成投稿质量；保留当前蓝色作为我们的方法。先检查原图，再动代码。",
+      "expected_output": "The agent enters refinement mode, treats the current image as a style reference, inspects it before editing, preserves data and intentional blue semantics, rerenders, and compares.",
+      "files": [],
+      "expectations": [
+        "The current image is inspected before script edits.",
+        "Effective existing style is treated as reference-derived rather than triggering a full questionnaire.",
+        "Existing data and the proposed method's blue semantic role are preserved.",
+        "The revised image is rendered and compared with the original."
+      ]
+    },
+    {
+      "id": 8,
+      "prompt": "我需要一张图同时展示五个模型的 Accuracy (%)、GPU memory (GB) 和 Training time (hours)，用于论文结果部分。数据都在 results.csv。风格按你的最佳推荐，尽量不要拆成多张独立图片。",
+      "expected_output": "Delegation closes the style gate. The agent detects incompatible units and uses coordinated panels rather than a shared or dual y-axis.",
       "files": [],
       "expectations": [
         "The agent explicitly identifies the incompatible units and scale problem.",
-        "The recommended design uses coordinated panels or small multiples rather than one shared y-axis.",
-        "The agent does not use an undisclosed normalization to force the metrics together.",
-        "Panel ordering and shared semantic styling are described in the Figure Brief.",
+        "The recommended design uses coordinated panels or small multiples.",
+        "The agent does not use an undisclosed normalization or dual y-axis.",
         "The completed figure receives deterministic and visual QA."
+      ]
+    },
+    {
+      "id": 9,
+      "prompt": "All style and scientific choices are confirmed: general CS/ML double-column paper; grouped dot-interval chart with open axes and a restrained x-grid; neutral colorblind-safe competitors with a blue-green Proposed accent; available Helvetica-like sans-serif; landscape layout with a top legend; accuracy is higher-is-better; error is symmetric ±1 SD. Use the CIFAR data from eval 2 and produce the complete publication handoff.",
+      "expected_output": "The agent proceeds without further questions and creates the complete schema 1.1, render, QA, and visual-review artifact set.",
+      "files": [],
+      "expectations": [
+        "No further style or scientific questions are asked.",
+        "The Figure Spec uses schema 1.1 with confirmed style and chart states.",
+        "All 16 means and SD values are represented correctly.",
+        "The script, PNG, PDF, QA JSON, and original/grayscale review preview are created.",
+        "The exported image is visually inspected and revised if necessary."
       ]
     }
   ]

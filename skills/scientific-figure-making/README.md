@@ -1,8 +1,8 @@
-# scientific-figure-making v0.6
+# scientific-figure-making v0.7
 
-A global-installable Agent Skill that turns raw experiment data and incomplete requests into planned, rendered, visually inspected, publication-ready Python/Matplotlib figures.
+A global-installable Agent Skill that turns raw experiment data, visual references, and incomplete requests into intentionally styled, scientifically honest, visually inspected, publication-ready Python/Matplotlib figures.
 
-The user does not need to preselect the chart, style, palette, dimensions, or complete output requirements. The skill creates a Figure Brief, asks only questions that change scientific interpretation, records a Figure Spec, uses publication-safe defaults for presentation, renders the figure, runs deterministic QA, creates an original/grayscale review preview, visually inspects the result, and revises defects.
+Version 0.7 uses a style-first confirmation gate. If style is incomplete, it first inspects any designated reference image, creates a Style Brief, and asks separately about unresolved venue, chart grammar, palette, typography, and layout. Scientific questions such as the meaning of `error` follow in the same response. Formal rendering starts only after both style and scientific semantics are confirmed or explicitly delegated.
 
 This skill separates four concepts:
 
@@ -11,12 +11,13 @@ This skill separates four concepts:
 - **Table style**: table grammar, including paper-style three-line tables, zebra rows, header fills, sparse rules, and compact appendix tables.
 - **Font**: publication-safe font stack selection, including non-serif stacks for cartoon/anime/cute/hand-drawn styles.
 
-These engines sit inside a guided workflow:
+These engines sit inside a confirmed guided workflow:
 
 ```text
-inputs -> Figure Brief -> critical questions/defaults -> Figure Spec
-       -> design engines -> script/render -> deterministic + visual QA
-       -> targeted revision -> reproducible handoff
+inputs/reference -> Style Brief -> style questions -> scientific questions
+                 -> confirmed Figure Brief -> Figure Spec 1.1
+                 -> design engines -> script/render -> deterministic + visual QA
+                 -> targeted revision -> reproducible handoff
 ```
 
 ## Install globally for Codex
@@ -43,7 +44,8 @@ Codex:
 ```text
 $scientific-figure-making
 results.csv contains my main experiment. Make the strongest honest paper figure.
-Ours is the proposed method; decide the chart and ordinary design defaults.
+Ours is the proposed method. I have not chosen the visual style yet, so ask me
+about every unresolved style dimension and recommend an answer for each.
 Render, validate, inspect the real image, and revise visible defects.
 ```
 
@@ -52,7 +54,7 @@ Claude Code:
 ```text
 /scientific-figure-making
 请读取 results.csv，完成论文主实验图。
-图类型和风格由你根据论文表达需要决定，Ours 是本文方法。
+Ours 是本文方法；我还没有决定图类型、配色、字体和版式，请先给出 Style Brief 并逐项询问。
 生成后检查真实图片并修复问题。
 ```
 
@@ -118,7 +120,8 @@ The preview prints palette candidates, the selected chart-style preset, and desi
 
 ## Guided workflow utilities
 
-Create and validate a Figure Spec:
+Create and validate a schema 1.1 Figure Spec. The initial template is
+intentionally invalid until style and chart confirmation are recorded:
 
 ```bash
 python scripts/figure_spec.py init --output figures/main.spec.json
@@ -143,7 +146,8 @@ Passing deterministic QA is not visual approval. The agent must open/read the re
 ## Key files
 
 - `SKILL.md`: agent-facing instructions.
-- `references/requirement-workflow.md`: incomplete-request and critical-question policy.
+- `references/style-intake.md`: reference-first style audit and question order.
+- `references/requirement-workflow.md`: style/science gates and question policy.
 - `references/chart-selection.md`: chart choice driven by the scientific message.
 - `references/figure-spec.md`: reproducible Figure Spec contract.
 - `references/visual-qa.md`: render, inspect, revise workflow.
