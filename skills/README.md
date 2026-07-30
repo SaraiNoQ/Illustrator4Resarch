@@ -4,7 +4,7 @@ This directory contains portable Agent Skills packages.
 
 Current skill:
 
-- `scientific-figure-making/`: publication-ready scientific figure generation with automatic palette selection.
+- `scientific-figure-making/`: guided publication-ready scientific figure planning, rendering, visual QA, and refinement with automatic palette, chart-style, table-style, and font selection.
 
 Claude Code project-local copy:
 

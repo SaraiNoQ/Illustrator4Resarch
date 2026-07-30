@@ -3,6 +3,7 @@ import matplotlib as mpl
 from scientific_figure_skill import (
     FigureStyle,
     apply_publication_style,
+    available_font_names,
     auto_figure_design,
     build_llm_font_selection_prompt,
     select_font_candidate,
@@ -55,3 +56,16 @@ def test_font_prompt_restricts_llm_to_registry():
     assert "publication-safe" in prompt
     assert "trebuchet_sans" in prompt
     assert "never Times New Roman" in prompt
+
+
+def test_selected_family_filters_unavailable_concrete_fonts():
+    family = select_font_family(
+        request="general publication figure",
+        chart_style="publication_minimal",
+    )
+    available = available_font_names()
+    generic = {"serif", "sans-serif", "cursive", "fantasy", "monospace"}
+
+    assert family
+    if available:
+        assert all(name in available or name in generic for name in family)

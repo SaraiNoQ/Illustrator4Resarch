@@ -1,0 +1,111 @@
+#!/usr/bin/env python3
+"""End-to-end v0.6 guided-workflow demo figure."""
+from __future__ import annotations
+
+import sys
+from pathlib import Path
+
+import matplotlib
+
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+import numpy as np
+
+SKILL_ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(SKILL_ROOT / "scripts"))
+
+from figure_design import FigureStyle, apply_publication_style, auto_figure_design
+from figure_fonts import select_font_family
+from figure_toolkit import finalize_figure, make_grouped_bar
+
+
+def main() -> None:
+    request = (
+        "Main paper result comparing four methods on four datasets. "
+        "General publication style, colorblind safe, proposed method emphasized."
+    )
+    categories = ["GSM8K", "MATH", "HotpotQA", "WebShop"]
+    labels = ["Fed-SOLO", "FedAvg-LoRA", "Local LoRA", "FedReFT"]
+    values = np.array(
+        [
+            [72.4, 41.8, 68.2, 58.0],
+            [68.1, 38.7, 64.5, 54.2],
+            [63.0, 34.9, 61.3, 49.8],
+            [66.2, 37.1, 63.8, 52.5],
+        ]
+    )
+
+    design = auto_figure_design(
+        request,
+        figure_type="grouped_bar",
+        n_colors=len(labels),
+        data_role="categorical",
+        venue="general_publication",
+    )
+    font_family = select_font_family(
+        request=request,
+        chart_style=design.chart_style,
+        venue="general_publication",
+    )
+    apply_publication_style(
+        FigureStyle(
+            palette=design.palette.colors,
+            color_roles=design.palette.color_roles,
+            chart_style=design.chart_style,
+            font_family=font_family,
+            dpi=300,
+        )
+    )
+
+    fig, ax = plt.subplots(figsize=(7.2, 4.4))
+    make_grouped_bar(
+        ax,
+        categories,
+        values,
+        labels,
+        ylabel="Accuracy / Success Rate (%)",
+        colors=design.palette.colors,
+        annotate=False,
+        edgecolor="#202124",
+        linewidth=0.8,
+        hatch=["", "//", "..", "\\\\"],
+    )
+    ax.set_ylim(0, 80)
+    ax.set_xlabel("Dataset", fontsize=11)
+    ax.set_ylabel("Accuracy / Success Rate (%)", fontsize=11)
+    ax.tick_params(axis="both", labelsize=10)
+    ax.grid(axis="y", color="#D9DEE7", linewidth=0.7, alpha=0.65)
+    ax.grid(axis="x", visible=False)
+    ax.legend(
+        loc="upper center",
+        bbox_to_anchor=(0.5, 1.15),
+        ncol=2,
+        fontsize=9,
+        handlelength=1.8,
+        columnspacing=1.4,
+    )
+    ax.text(
+        0.01,
+        0.98,
+        "Higher is better",
+        transform=ax.transAxes,
+        ha="left",
+        va="top",
+        fontsize=8,
+        color="#50555C",
+    )
+
+    output_stem = Path("figures/guided_workflow_demo")
+    written = finalize_figure(
+        fig,
+        output_stem,
+        formats=("png", "pdf"),
+        dpi=300,
+        close=True,
+    )
+    for path in written:
+        print(path)
+
+
+if __name__ == "__main__":
+    main()

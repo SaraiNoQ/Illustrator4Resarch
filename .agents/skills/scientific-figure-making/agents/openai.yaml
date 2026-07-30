@@ -1,16 +1,23 @@
 interface:
   display_name: "Scientific Figure Making"
-  short_description: "Generate publication-ready Matplotlib scientific figures with automatic palette selection."
+  short_description: "Guide incomplete research data requests through planning, rendering, visual QA, and publication-ready Matplotlib delivery."
   brand_color: "#0F4D92"
-  default_prompt: "Use this skill to create a paper-ready scientific figure. Provide figure type, data, target style, semantic roles, and output paths."
+  default_prompt: "Use this skill to turn my experiment data or existing plot into a publication-ready figure. Infer the chart and safe defaults, ask only scientifically critical questions, create a Figure Brief and Figure Spec, render PNG/PDF, inspect the original/grayscale preview, and revise defects."
 
 policy:
   allow_implicit_invocation: true
 
 metadata:
-  version: "0.4.0"
+  version: "0.6.0"
   install_scope: "repo,user,admin"
   standalone: true
+  design_layers:
+    - guided_workflow
+    - palette
+    - chart_style
+    - table_style
+    - font
+    - export_qa
 
 dependencies:
   python: ">=3.9"

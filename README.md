@@ -1,8 +1,8 @@
 # Illustrator4Resarch
 
 <p align="center">
-  <strong>Agent skill for publication-ready scientific figures.</strong><br />
-  Turn natural-language research plotting requests into clean, reproducible Matplotlib figures.
+  <strong>Guided agent skill for publication-ready scientific figures.</strong><br />
+  Start with raw experiment data and an incomplete request; finish with a planned, rendered, inspected, reproducible figure.
 </p>
 
 <p align="center">
@@ -27,18 +27,21 @@
 
 ## What it does
 
-`Illustrator4Resarch` is a reusable agent skill for creating, polishing, and refactoring Python/Matplotlib figures for papers, theses, reports, and research slides.
+`Illustrator4Resarch` is a reusable agent skill for planning, creating, inspecting, and refining Python/Matplotlib figures for papers, theses, reports, and research slides.
 
-It is designed for the workflow researchers actually use: describe the chart, data, venue/style preference, palette constraints, highlighted method, output paths, and validation requirements; the agent then produces a plotting script plus exported `.png` and `.pdf` figures.
+Version 0.6 no longer requires the researcher to prepare a complete plotting prompt. Give it raw results, a manuscript claim, an existing script/image, or a broad request such as “make the main paper figure.” The skill builds a Figure Brief, asks only questions that can change scientific meaning, chooses and explains the chart, records a Figure Spec, renders the outputs, performs deterministic and visual QA, and revises observed defects.
 
 | Layer | Responsibility | Examples |
 | --- | --- | --- |
+| Guided workflow | Turns incomplete inputs into a checked figure plan | Figure Brief, critical questions, assumptions, Figure Spec |
 | Palette engine | Selects colorblind-safe palettes and semantic roles | proposed method, baseline, ablation, neutral, highlight |
 | Chart-style engine | Selects plotting form and publication aesthetics | Nature-like, IEEE Transactions, NeurIPS, seaborn-like, thesis clean |
+| Table-style engine | Selects paper, appendix, dashboard, or print-safe table grammar | three-line table, compact table, zebra table |
 | Font engine | Selects publication-safe font stacks from a controlled registry | Arial/Helvetica for formal styles; Trebuchet/Verdana-like sans fonts for cute hand-drawn styles |
 | Plotting helpers | Provides reusable Matplotlib wrappers | grouped bar, trend curve, heatmap, scatter-style figures |
+| Export QA | Validates and visually reviews actual outputs | DPI, signatures, blank renders, grayscale preview, collision review |
 
-The important design choice is that **palette, chart style, and font selection are separate decisions**. A “cute hand-drawn anime style” figure should not silently inherit Times New Roman just because the manuscript uses a formal paper template.
+The important design choice is that workflow, chart form, palette, chart style, table style, font, and QA are separate responsibilities. A good palette cannot rescue the wrong chart, and a successful Python process does not prove that labels are readable in the exported image.
 
 ## Quick Start
 
@@ -101,11 +104,8 @@ The installer is idempotent. If the target skill directory already exists, it re
 Use this test request after installation:
 
 ```text
-请根据下面的数据画一张论文主实验 grouped bar。
-图表风格：二次元、可爱、手绘风格。
-配色要求：清新自然，色盲安全，主方法突出，baseline 有对比。
-导出 figures/main_comparison.png 和 figures/main_comparison.pdf。
-实验数据如下
+请根据下面的数据制作论文主实验图。图类型、排版、配色和输出细节由你根据数据与论文表达需要决定；Fed-SOLO 是本文方法。
+
 Datasets: GSM8K, MATH, HotpotQA, WebShop
 Metric: Accuracy / Success Rate (%)
 Fed-SOLO: 72.4, 41.8, 68.2, 58.0
@@ -114,7 +114,9 @@ Local LoRA: 63.0, 34.9, 61.3, 49.8
 FedReFT: 66.2, 37.1, 63.8, 52.5
 ```
 
-For this style, the font engine should choose a publication-safe non-serif stack instead of Times New Roman.
+The agent should proceed without asking you to choose a chart or palette, then return a runnable script, PNG, PDF, Figure Spec, QA report, and original/grayscale review preview.
+
+If a request contains scientifically ambiguous uncertainty such as `78.4 ± 0.7`, the skill asks what `±` means before rendering error bars. Aesthetic omissions use documented defaults instead.
 
 ## Agent Workflows
 
@@ -124,10 +126,9 @@ After global installation:
 
 ```text
 /scientific-figure-making
-请生成一张论文级 grouped bar。
-图表风格：Nature-like journal style，简洁、紧凑、无重网格。
-配色要求：色盲安全，主方法突出，baseline 有对比。
-导出 figures/main_comparison.png 和 figures/main_comparison.pdf。
+results.csv 是论文主实验结果，请你读取数据并决定最合适的论文图。
+突出 Ours；没有提供的普通设计要求请使用合理默认值。
+生成后检查真实导出图片并修复问题。
 ```
 
 Inside this repository, Claude Code can also discover the project wrapper at:
@@ -142,11 +143,10 @@ After global installation:
 
 ```text
 $scientific-figure-making
-Task: create a paper-ready grouped bar chart.
-Venue/style: IEEE Transactions compact style.
-Palette: colorblind-safe, proposed method highlighted, baselines visually distinct.
-Output: create scripts/plot_main_comparison.py and save figures/main_comparison.png and figures/main_comparison.pdf.
-Validation: run the plotting script. If library code is changed, run python -m pytest -q.
+Use results.csv to create the main paper figure.
+Infer the honest chart form and publication-safe design; Ours is the proposed method.
+Create the Figure Brief and Figure Spec, render PNG/PDF, run deterministic QA,
+inspect the original/grayscale preview, and revise visible defects.
 ```
 
 Inside this repository, Codex can also discover the repo-scoped wrapper at:
@@ -165,11 +165,9 @@ opencode
 
 ```text
 Read AGENTS.md and use skills/scientific-figure-making/SKILL.md as the figure-generation skill.
-Create a publication-ready grouped bar chart from the data below.
-Chart style: 二次元、可爱、手绘风格, but still suitable for an academic paper.
-Palette: fresh, natural, colorblind-safe; highlight the proposed method.
-Output: figures/main_comparison.png and figures/main_comparison.pdf.
-Validation: run the plotting script and fix any rendering issues.
+Read results.csv and turn it into the strongest honest main-paper figure.
+Use the guided workflow because the chart and style are unspecified.
+Render the outputs, validate them, inspect the review preview, and revise defects.
 ```
 
 The OpenCode path is intentionally repository-local: it relies on `AGENTS.md` plus the canonical skill folder, so it works even when different OpenCode setups use different command/plugin conventions.
@@ -186,11 +184,9 @@ Then ask Hermes to use the installed skill:
 
 ```text
 Use the scientific-figure-making skill from ~/.hermes/skills/scientific-figure-making/SKILL.md.
-Create a publication-ready grouped bar chart.
-Chart style: Datawrapper-like clean editorial style.
-Palette: colorblind-safe, proposed method highlighted, baselines visually distinct.
-Output: figures/main_comparison.png and figures/main_comparison.pdf.
-Validation: run the plotting script and fix any rendering issues.
+Use results.csv to make a publication-ready main-results figure.
+Decide the chart and safe defaults, ask only scientifically critical questions,
+then render, validate, visually inspect, and revise the exports.
 ```
 
 For non-standard Hermes deployments, install to the directory that your Hermes instance scans:
@@ -274,20 +270,30 @@ Illustrator4Resarch/
 │   ├── SKILL.md
 │   ├── README.md
 │   ├── agents/openai.yaml
+│   ├── evals/evals.json
 │   ├── references/
 │   │   ├── api-usage.md
+│   │   ├── chart-selection.md
+│   │   ├── figure-spec.md
 │   │   ├── font-workflow.md
 │   │   ├── global-installation.md
 │   │   ├── palette-workflow.md
-│   │   └── style-workflow.md
+│   │   ├── requirement-workflow.md
+│   │   ├── style-workflow.md
+│   │   ├── table-workflow.md
+│   │   └── visual-qa.md
 │   ├── scripts/
 │   │   ├── figure_design.py
 │   │   ├── figure_fonts.py
+│   │   ├── figure_spec.py
 │   │   ├── figure_toolkit.py
-│   │   └── preview_palette.py
+│   │   ├── preview_palette.py
+│   │   ├── render_preview.py
+│   │   └── validate_figure.py
 │   └── examples/
 ├── scientific_figure_skill/                   # Importable Python implementation
 ├── examples/
+├── docs/guided-workflow-v0.6-plan.md
 ├── scripts/
 └── tests/
 ```

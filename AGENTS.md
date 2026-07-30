@@ -94,13 +94,32 @@ Use this repository-local workflow for OpenCode because different OpenCode setup
 
 ## Figure-generation workflow
 
-1. Parse figure type, data shape, venue/chart style, palette preference, semantic roles, table style if applicable, and output paths.
-2. Prefer `auto_figure_design(...)` from `scientific_figure_skill` inside the repo, or `figure_design.py` from the global skill path.
-3. Use `FigureStyle(..., palette=design.palette.colors, chart_style=design.chart_style)` and `apply_publication_style(...)`.
-4. Use `make_grouped_bar(...)`, `make_trend(...)`, `make_heatmap(...)`, `apply_table_style(...)`, or raw Matplotlib as needed.
-5. Export PNG and PDF unless the user asks otherwise.
-6. Run the generated plotting script.
-7. If Python package logic changes, run `python -m pytest -q`.
+Version 0.6 uses a guided workflow. The user does not need to provide a complete
+plot specification.
+
+1. Inspect the supplied data, script, image, caption, or manuscript context.
+2. Create a concise Figure Brief covering the research question, intended
+   message, data semantics, recommended chart, defaults, assumptions, and
+   questions.
+3. Ask only when missing information changes scientific interpretation. Batch at
+   most three critical questions; default ordinary presentation choices.
+4. Choose the chart from the scientific message. Use panels rather than forcing
+   incompatible units onto one axis.
+5. Save and validate a Figure Spec for substantive tasks.
+6. Prefer `auto_figure_design(...)` from `scientific_figure_skill` inside the
+   repo, or `figure_design.py` from the global skill path.
+7. Use `FigureStyle(...)`, the selected palette/chart/table/font engines, bundled
+   helpers, or raw Matplotlib as appropriate.
+8. Export PNG and PDF unless the user asks otherwise, then run the script from a
+   clean process.
+9. Run `validate_figure.py`, generate an original/grayscale review sheet with
+   `render_preview.py`, and inspect the actual image with an available image
+   tool.
+10. Revise correctness, legibility, hierarchy, accessibility, and polish defects
+    before delivery.
+11. Report exact artifact paths, assumptions, QA results, visual-review passes,
+    and the reproduction command.
+12. If repository logic changes, run `python -m pytest -q`.
 
 ## Quality rules
 
@@ -117,3 +136,9 @@ Use this repository-local workflow for OpenCode because different OpenCode setup
 - For black-and-white print, use grayscale plus hatching or marker styles.
 - For paper tables, prefer three-line/booktabs-like sparse rules.
 - Always provide exact output paths.
+- Never invent the meaning of uncertainty such as `±`; ask whether it is SD,
+  SE, CI, range, or another quantity.
+- Do not ask the user to choose an aesthetic option when a safe documented
+  default can proceed.
+- Do not claim visual QA passed without opening or reading the exported image.
+- Preserve a Figure Spec and deterministic QA report for substantive figures.

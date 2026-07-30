@@ -7,10 +7,11 @@ not by using decorative comic fonts.
 """
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Sequence
 import json
 import re
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any
 
 try:
     from matplotlib import font_manager
@@ -234,6 +235,16 @@ def available_font_names() -> set[str]:
         return set()
 
 
+def available_font_family(family: Sequence[str]) -> tuple[str, ...]:
+    """Keep installed concrete fonts plus the generic final fallback."""
+    available = available_font_names()
+    if not available:
+        return tuple(family)
+    generic = {"serif", "sans-serif", "cursive", "fantasy", "monospace"}
+    filtered = tuple(name for name in family if name in available or name in generic)
+    return filtered or tuple(family)
+
+
 def _score_font(candidate: FontCandidate, tags: set[str], available: set[str]) -> float:
     score = 2.0 * candidate.priority + 1.5 * len(tags & set(candidate.tags))
     if candidate.category == "sans_serif" and "sans_serif" in tags:
@@ -282,7 +293,13 @@ def select_font_family(
     venue: str | None = None,
     preferred: str | None = None,
 ) -> tuple[str, ...]:
-    return select_font_candidate(request=request, chart_style=chart_style, venue=venue, preferred=preferred).family
+    candidate = select_font_candidate(
+        request=request,
+        chart_style=chart_style,
+        venue=venue,
+        preferred=preferred,
+    )
+    return available_font_family(candidate.family)
 
 
 def should_auto_replace_font(font_family: Sequence[str] | None) -> bool:

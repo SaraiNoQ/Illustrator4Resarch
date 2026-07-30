@@ -22,10 +22,9 @@ Invoke globally:
 
 ```text
 /scientific-figure-making
-请根据下面的数据生成论文主实验 grouped bar。
-图表风格：Nature-like journal style，紧凑、简洁、无重网格。
-配色要求：色盲安全，主方法突出。
-导出 PNG 和 PDF。
+results.csv 包含论文主实验结果，请你决定最合适的图表和投稿级设计。
+Ours 是本文方法；普通视觉要求使用合理默认值。
+生成 PNG/PDF 后检查实际图片并修复问题。
 ```
 
 ## Project-scoped use
@@ -44,13 +43,16 @@ skills/scientific-figure-making/SKILL.md
 
 ## What Claude should do when the skill is used
 
-1. Parse the user's figure type, data shape, target venue/chart style, palette preference, semantic roles, and output paths.
-2. Treat palette and chart style as separate decisions.
-3. Use `auto_figure_design(...)` from `scientific_figure_skill` when working inside this repository.
-4. If the skill is globally installed outside this repository, use `scripts/figure_design.py` for design decisions and `scripts/figure_toolkit.py` for plotting helpers.
-5. Generate complete runnable Python/Matplotlib code.
-6. Export at least PNG and PDF.
-7. Run the plotting script and report exact output paths.
+1. Accept incomplete requests and infer guided, direct, refinement, or multi-panel mode.
+2. Inspect inputs and create a Figure Brief before coding.
+3. Ask only about ambiguities that change scientific meaning; use documented defaults for presentation.
+4. Choose the chart from the research message and record a Figure Spec.
+5. Treat palette, chart style, table style, font, layout, and semantic roles as separate decisions.
+6. Use `auto_figure_design(...)` from `scientific_figure_skill` inside this repository.
+7. Outside the repository, use the standalone scripts bundled with the skill.
+8. Generate complete runnable Python/Matplotlib code and export PNG/PDF.
+9. Validate exports, generate an original/grayscale review image, and read the actual image.
+10. Revise visible defects and report exact artifact paths, assumptions, and QA status.
 
 ## Style behavior
 

@@ -1,0 +1,63 @@
+{
+  "schema_version": "1.0",
+  "mode": "guided",
+  "research_goal": {
+    "question": "Which method performs best across the four benchmark datasets?",
+    "message": "Fed-SOLO is consistently strongest across the evaluated datasets.",
+    "metric_direction": "higher"
+  },
+  "data": {
+    "source": "embedded in skills/scientific-figure-making/examples/guided_workflow_demo.py",
+    "structure": "method_by_dataset",
+    "metrics": [
+      "Accuracy / Success Rate (%)"
+    ],
+    "uncertainty": {
+      "kind": "none",
+      "source": null
+    }
+  },
+  "chart": {
+    "type": "grouped_bar",
+    "x": "dataset",
+    "y": "Accuracy / Success Rate (%)",
+    "series": "method",
+    "panels": []
+  },
+  "design": {
+    "venue": "general_publication",
+    "column_width": "double",
+    "chart_style": "publication_minimal",
+    "palette_request": "colorblind-safe with non-color secondary encoding",
+    "semantic_roles": {
+      "Fed-SOLO": "proposed",
+      "FedAvg-LoRA": "baseline",
+      "Local LoRA": "neutral",
+      "FedReFT": "secondary"
+    },
+    "accessibility": [
+      "colorblind_safe",
+      "grayscale_distinguishable",
+      "hatch_secondary_encoding"
+    ]
+  },
+  "output": {
+    "stem": "figures/guided_workflow_demo",
+    "formats": [
+      "png",
+      "pdf"
+    ],
+    "dpi": 300
+  },
+  "assumptions": [
+    "No uncertainty or raw replicates were supplied, so no error bars are shown.",
+    "A general double-column publication layout is used because no venue was specified."
+  ],
+  "open_questions": [],
+  "acceptance_criteria": [
+    "All 16 supplied values are represented exactly once.",
+    "The y-axis starts at zero because bar length encodes magnitude.",
+    "Every method remains distinguishable in the grayscale preview.",
+    "The legend and labels do not obscure data at final export size."
+  ]
+}

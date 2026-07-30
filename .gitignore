@@ -1,11 +1,17 @@
 __pycache__/
 *.py[cod]
+*.egg-info/
 .pytest_cache/
 .venv/
 venv/
+uv.lock
+.codegraph/
+dist/
+skills/scientific-figure-making-workspace/
 .DS_Store
 CLAUDE.local.md
 figures/*.png
 figures/*.pdf
 figures/*.svg
 figures/*.eps
+figures/*.json
